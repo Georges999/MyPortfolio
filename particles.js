@@ -1,32 +1,34 @@
-// Interactive Particles System
+// Enhanced Particles System
 class ParticleSystem {
   constructor() {
     this.scene = null;
     this.camera = null;
     this.renderer = null;
     this.particles = null;
-    this.particleCount = 3000;
-    this.particlesData = [];
+    this.particleCount = 2000;
     this.positions = [];
     this.colors = [];
     this.sizes = [];
-    this.currentShape = 'sphere';
+    this.currentShape = 'wave'; // Default shape is wave
     this.container = document.getElementById('particles-canvas');
     this.clock = new THREE.Clock();
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
     this.colorPalettes = [
-      { base: new THREE.Color(0x6c63ff), accent: new THREE.Color(0xf50057) }, // Purple & Pink
+      { base: new THREE.Color(0x6c63ff), accent: new THREE.Color(0xf50057) }, // Purple & Pink - Primary theme color
       { base: new THREE.Color(0x00bcd4), accent: new THREE.Color(0x4caf50) }, // Cyan & Green
       { base: new THREE.Color(0xff9800), accent: new THREE.Color(0xff5722) }, // Orange & Deep Orange
-      { base: new THREE.Color(0x2196f3), accent: new THREE.Color(0x3f51b5) }  // Blue & Indigo
+      { base: new THREE.Color(0x2196f3), accent: new THREE.Color(0x3f51b5) }, // Blue & Indigo
     ];
-    this.currentPalette = 0;
-    this.maxTransformTime = 3.0; // Time to complete a shape transformation
+    this.currentPalette = 0; // Using the default primary color palette
+    this.maxTransformTime = 2.0; // Time to complete a shape transformation
     this.transformTime = 0;
     this.transforming = false;
-    this.targetPositions = [];
-    this.startPositions = [];
+    this.targetPositions = null;
+    this.startPositions = null;
+    this.velocities = [];
+    this.yOffset = 6; // Positive offset to position shapes higher
+    this.scale = 0.85; // Increased scale factor to make shapes bigger
     
     // Initialize only if container exists
     if (this.container) {
@@ -64,51 +66,38 @@ class ParticleSystem {
     // Handle window resize
     window.addEventListener('resize', () => this.onWindowResize());
     
-    // Mouse move interaction
-    window.addEventListener('mousemove', (event) => this.onMouseMove(event));
-    
     // Start animation loop
     this.animate();
+    
+    // Initialize with wave shape
+    setTimeout(() => {
+      this.transformToShape('wave');
+    }, 100);
   }
   
   createParticles() {
     // Particle geometry
     const geometry = new THREE.BufferGeometry();
     
-    // Create positions, colors and sizes for particles
+    // Arrays to store particle data
     this.positions = new Float32Array(this.particleCount * 3);
     this.colors = new Float32Array(this.particleCount * 3);
     this.sizes = new Float32Array(this.particleCount);
+    this.startPositions = new Float32Array(this.particleCount * 3);
+    this.targetPositions = new Float32Array(this.particleCount * 3);
+    this.velocities = new Float32Array(this.particleCount * 3);
     
     const color = this.colorPalettes[this.currentPalette].base;
     const accentColor = this.colorPalettes[this.currentPalette].accent;
     
+    // Initial positions - spread out randomly before transforming to wave
     for (let i = 0; i < this.particleCount; i++) {
-      // Initial shape - sphere
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const radius = 10 + Math.random() * 5;
-      
-      const x = radius * Math.sin(phi) * Math.cos(theta);
-      const y = radius * Math.sin(phi) * Math.sin(theta);
-      const z = radius * Math.cos(phi);
-      
       const i3 = i * 3;
-      this.positions[i3] = x;
-      this.positions[i3 + 1] = y;
-      this.positions[i3 + 2] = z;
       
-      // Store initial particle data
-      this.particlesData.push({
-        velocity: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.05,
-          (Math.random() - 0.5) * 0.05,
-          (Math.random() - 0.5) * 0.05
-        ),
-        originalX: x,
-        originalY: y,
-        originalZ: z
-      });
+      // Random initial position
+      this.positions[i3] = (Math.random() - 0.5) * 30;
+      this.positions[i3 + 1] = (Math.random() - 0.5) * 30 + this.yOffset;
+      this.positions[i3 + 2] = (Math.random() - 0.5) * 30;
       
       // Random color between base and accent
       const mixFactor = Math.random();
@@ -118,21 +107,21 @@ class ParticleSystem {
       this.colors[i3 + 1] = particleColor.g;
       this.colors[i3 + 2] = particleColor.b;
       
-      // Random size
-      this.sizes[i] = Math.random() * 3 + 1;
+      // Random size - slightly larger particles
+      this.sizes[i] = Math.random() * 2.0 + 0.5;
     }
     
     geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(this.colors, 3));
     geometry.setAttribute('size', new THREE.BufferAttribute(this.sizes, 1));
     
-    // Material for particles
+    // Enhanced particle material
     const material = new THREE.PointsMaterial({
-      size: 0.5,
+      size: 1.0, // Larger default size
       vertexColors: true,
       transparent: true,
-      opacity: 0.8,
-      sizeAttenuation: true
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
     });
     
     // Create the particle system
@@ -146,28 +135,18 @@ class ParticleSystem {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
   
-  onMouseMove(event) {
-    // Convert mouse position to normalized device coordinates
-    this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    this.mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-  }
-  
   setupEventListeners() {
     // Shape morphing controls
     document.getElementById('shape-sphere').addEventListener('click', () => {
-      this.transformToShape('sphere');
+      this.transformToShape('constellation');
     });
     
     document.getElementById('shape-cube').addEventListener('click', () => {
-      this.transformToShape('cube');
+      this.transformToShape('wave');
     });
     
     document.getElementById('shape-helix').addEventListener('click', () => {
       this.transformToShape('helix');
-    });
-    
-    document.getElementById('change-colors').addEventListener('click', () => {
-      this.changeColors();
     });
     
     // Dark mode listener
@@ -193,52 +172,141 @@ class ParticleSystem {
       this.startPositions[i3 + 2] = this.positions[i3 + 2];
       
       // Calculate target position based on shape
-      if (shape === 'sphere') {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-        const radius = 12 + Math.random() * 3;
-        
-        targetPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-        targetPositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-        targetPositions[i3 + 2] = radius * Math.cos(phi);
-      } 
-      else if (shape === 'cube') {
-        // Cube
-        targetPositions[i3] = (Math.random() - 0.5) * 20;
-        targetPositions[i3 + 1] = (Math.random() - 0.5) * 20;
-        targetPositions[i3 + 2] = (Math.random() - 0.5) * 20;
-        
-        // Project to cube surface
-        const maxVal = Math.max(
-          Math.abs(targetPositions[i3]),
-          Math.abs(targetPositions[i3 + 1]),
-          Math.abs(targetPositions[i3 + 2])
-        );
-        
-        if (Math.random() > 0.5) {
-          const axis = Math.floor(Math.random() * 3);
-          const sign = Math.random() > 0.5 ? 1 : -1;
+      if (shape === 'constellation') {
+        // Create an artistic constellation pattern
+        // Divide particles into stars and connecting lines
+        if (i < this.particleCount * 0.15) {
+          // Main constellation stars (15% of particles)
+          // Create clusters of stars in 3D space
           
-          if (axis === 0) {
-            targetPositions[i3] = 10 * sign;
-          } else if (axis === 1) {
-            targetPositions[i3 + 1] = 10 * sign;
-          } else {
-            targetPositions[i3 + 2] = 10 * sign;
+          // Determine which cluster this star belongs to
+          const clusterCount = 7; // Number of main star clusters
+          const clusterId = Math.floor(i / (this.particleCount * 0.15) * clusterCount);
+          
+          // Each cluster has a base position
+          const clusterCenters = [
+            { x: 6, y: 3, z: 3 },
+            { x: -7, y: 5, z: -1 },
+            { x: 2, y: -4, z: 5 },
+            { x: -4, y: -6, z: -2 },
+            { x: 8, y: 7, z: -4 },
+            { x: -5, y: 8, z: 4 },
+            { x: 0, y: -2, z: -6 }
+          ];
+          
+          // Position stars around their cluster center with some randomness
+          const center = clusterCenters[clusterId];
+          const clusterRadius = 2.5 * this.scale;
+          
+          targetPositions[i3] = center.x * this.scale + (Math.random() - 0.5) * clusterRadius;
+          targetPositions[i3 + 1] = center.y * this.scale + (Math.random() - 0.5) * clusterRadius + this.yOffset;
+          targetPositions[i3 + 2] = center.z * this.scale + (Math.random() - 0.5) * clusterRadius;
+          
+          // These are larger "stars"
+          this.sizes[i] = Math.random() * 2.5 + 1.5;
+        } 
+        else if (i < this.particleCount * 0.5) {
+          // Connecting lines and dust between stars (35% of particles)
+          // Create lines that connect the main constellation stars
+          
+          // Pick two random cluster centers to connect
+          const clusterCount = 7;
+          const cluster1 = Math.floor(Math.random() * clusterCount);
+          let cluster2 = Math.floor(Math.random() * clusterCount);
+          while (cluster2 === cluster1) {
+            cluster2 = Math.floor(Math.random() * clusterCount);
           }
+          
+          const clusterCenters = [
+            { x: 6, y: 3, z: 3 },
+            { x: -7, y: 5, z: -1 },
+            { x: 2, y: -4, z: 5 },
+            { x: -4, y: -6, z: -2 },
+            { x: 8, y: 7, z: -4 },
+            { x: -5, y: 8, z: 4 },
+            { x: 0, y: -2, z: -6 }
+          ];
+          
+          const from = clusterCenters[cluster1];
+          const to = clusterCenters[cluster2];
+          
+          // Position along the line with some noise
+          const t = Math.random();
+          const noiseAmount = 1.0 * this.scale;
+          
+          targetPositions[i3] = (from.x + (to.x - from.x) * t) * this.scale + (Math.random() - 0.5) * noiseAmount;
+          targetPositions[i3 + 1] = (from.y + (to.y - from.y) * t) * this.scale + (Math.random() - 0.5) * noiseAmount + this.yOffset;
+          targetPositions[i3 + 2] = (from.z + (to.z - from.z) * t) * this.scale + (Math.random() - 0.5) * noiseAmount;
+          
+          // These are smaller "dust" particles
+          this.sizes[i] = Math.random() * 0.8 + 0.2;
+        } 
+        else {
+          // Background stars (50% of particles) - create a cosmic feel
+          // Distributed spherically but with more interesting patterns
+          
+          // Spiral galaxy-like distribution
+          const arm = Math.floor(Math.random() * 3); // 3 spiral arms
+          const armAngle = arm * (Math.PI * 2 / 3);
+          const distFromCenter = Math.random() * 12 * this.scale;
+          const spiralTightness = 0.3;
+          
+          const spiralAngle = distFromCenter * spiralTightness + armAngle;
+          let x = Math.cos(spiralAngle) * distFromCenter;
+          let z = Math.sin(spiralAngle) * distFromCenter;
+          
+          // Add some vertical dimension
+          const y = (Math.random() - 0.5) * 6 * this.scale;
+          
+          // Flatten the spiral slightly
+          if (Math.random() > 0.2) {
+            const flattenAmount = 0.8;
+            x *= flattenAmount;
+            z *= flattenAmount;
+          }
+          
+          targetPositions[i3] = x;
+          targetPositions[i3 + 1] = y + this.yOffset;
+          targetPositions[i3 + 2] = z;
+          
+          // Varied sizes for background stars
+          this.sizes[i] = Math.random() * 1.0 + 0.3;
         }
       } 
+      else if (shape === 'wave') {
+        // Wave shape - fluid, aesthetic design
+        const u = Math.random();
+        const v = Math.random();
+        
+        const amplitude = 3 * this.scale;
+        const frequency = 3;
+        const phaseShift = Math.PI / 2;
+        
+        const x = (u * 2 - 1) * 10 * this.scale;
+        const z = (v * 2 - 1) * 10 * this.scale;
+        
+        // Create a wave pattern along the x-z plane
+        const y = amplitude * Math.sin(frequency * x + phaseShift) * 
+                 Math.cos(frequency * z) + this.yOffset;
+        
+        targetPositions[i3] = x;
+        targetPositions[i3 + 1] = y;
+        targetPositions[i3 + 2] = z;
+      } 
       else if (shape === 'helix') {
-        // Helix
-        const angle = i / this.particleCount * Math.PI * 15;
-        const radius = 10;
-        const y = (i / this.particleCount * 30) - 15;
+        // Enhanced helix
+        const angle = i / this.particleCount * Math.PI * 8;
+        const radius = 7 * this.scale;
+        const y = (i / this.particleCount * 20 - 10) * this.scale + this.yOffset;
         
         targetPositions[i3] = radius * Math.cos(angle);
         targetPositions[i3 + 1] = y;
         targetPositions[i3 + 2] = radius * Math.sin(angle);
       }
     }
+    
+    // Update size attribute
+    this.particles.geometry.attributes.size.needsUpdate = true;
     
     return targetPositions;
   }
@@ -250,11 +318,6 @@ class ParticleSystem {
     this.targetPositions = this.calculateTargetPositions(shape);
     this.transforming = true;
     this.transformTime = 0;
-  }
-  
-  changeColors() {
-    this.currentPalette = (this.currentPalette + 1) % this.colorPalettes.length;
-    this.updateParticleColors();
   }
   
   updateParticleColors() {
@@ -286,8 +349,8 @@ class ParticleSystem {
         this.transformTime = this.maxTransformTime;
       }
       
-      // Calculate progress (with easing)
-      const progress = this.easeInOutCubic(this.transformTime / this.maxTransformTime);
+      // Calculate progress (with improved easing for smoother transitions)
+      const progress = this.easeInOutQuint(this.transformTime / this.maxTransformTime);
       
       // Update positions based on progress
       for (let i = 0; i < this.particleCount; i++) {
@@ -298,50 +361,99 @@ class ParticleSystem {
         this.positions[i3 + 2] = this.startPositions[i3 + 2] + (this.targetPositions[i3 + 2] - this.startPositions[i3 + 2]) * progress;
       }
     } else {
-      // Add subtle animation to particles
-      for (let i = 0; i < this.particleCount; i++) {
-        const i3 = i * 3;
-        const particleData = this.particlesData[i];
-        
-        // Apply velocity with damping
-        this.positions[i3] += particleData.velocity.x * deltaTime * 2;
-        this.positions[i3 + 1] += particleData.velocity.y * deltaTime * 2;
-        this.positions[i3 + 2] += particleData.velocity.z * deltaTime * 2;
-        
-        // Return to original position with spring effect
-        const dx = this.positions[i3] - particleData.originalX;
-        const dy = this.positions[i3 + 1] - particleData.originalY;
-        const dz = this.positions[i3 + 2] - particleData.originalZ;
-        
-        particleData.velocity.x -= dx * 0.01 * deltaTime;
-        particleData.velocity.y -= dy * 0.01 * deltaTime;
-        particleData.velocity.z -= dz * 0.01 * deltaTime;
-        
-        // Apply damping
-        particleData.velocity.x *= 0.99;
-        particleData.velocity.y *= 0.99;
-        particleData.velocity.z *= 0.99;
-      }
-    }
-    
-    // React to mouse movement
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObject(this.particles);
-    
-    if (intersects.length > 0) {
-      const interaction = new THREE.Vector3().copy(this.raycaster.ray.direction).multiplyScalar(20);
+      // Animation for shapes
+      const shape = this.currentShape;
       
-      // Push particles away from mouse
-      for (let i = 0; i < this.particleCount; i++) {
-        const i3 = i * 3;
-        const particlePos = new THREE.Vector3(this.positions[i3], this.positions[i3 + 1], this.positions[i3 + 2]);
-        const distance = particlePos.distanceTo(this.camera.position.clone().add(interaction)) - 5;
+      if (shape === 'helix') {
+        // Gentle animation without rotation
+        for (let i = 0; i < this.particleCount; i++) {
+          const i3 = i * 3;
+          
+          // Small oscillation based on position
+          const time = this.clock.getElapsedTime();
+          const factor = Math.sin(time * 0.5 + this.positions[i3] * 0.1) * 0.05;
+          
+          // Add subtle movement
+          this.positions[i3] += (Math.random() - 0.5) * 0.01;
+          this.positions[i3 + 1] += factor + (Math.random() - 0.5) * 0.01;
+          this.positions[i3 + 2] += (Math.random() - 0.5) * 0.01;
+          
+          // Pull back to original position to maintain shape
+          const dx = this.positions[i3] - this.targetPositions[i3];
+          const dy = this.positions[i3 + 1] - this.targetPositions[i3 + 1];
+          const dz = this.positions[i3 + 2] - this.targetPositions[i3 + 2];
+          
+          this.positions[i3] -= dx * 0.03;
+          this.positions[i3 + 1] -= dy * 0.03;
+          this.positions[i3 + 2] -= dz * 0.03;
+        }
+      } else if (shape === 'constellation') {
+        // Animated constellation
+        const time = this.clock.getElapsedTime();
         
-        if (distance < 5) {
-          const force = Math.max(0, (5 - distance) / 5);
-          this.particlesData[i].velocity.x += force * 0.5 * (Math.random() - 0.5);
-          this.particlesData[i].velocity.y += force * 0.5 * (Math.random() - 0.5);
-          this.particlesData[i].velocity.z += force * 0.5 * (Math.random() - 0.5);
+        for (let i = 0; i < this.particleCount; i++) {
+          const i3 = i * 3;
+          
+          if (i < this.particleCount * 0.15) {
+            // Main stars: subtle pulsing effect
+            const pulseFactor = Math.sin(time + i * 0.1) * 0.05 + 1.0;
+            
+            // Small random movement
+            this.positions[i3] += (Math.random() - 0.5) * 0.01;
+            this.positions[i3 + 1] += (Math.random() - 0.5) * 0.01;
+            this.positions[i3 + 2] += (Math.random() - 0.5) * 0.01;
+            
+            // Pulsing size effect
+            this.sizes[i] = (Math.random() * 1.5 + 1.5) * pulseFactor;
+          } 
+          else if (i < this.particleCount * 0.5) {
+            // Connecting lines: gentle flowing motion
+            const flowSpeed = 0.3;
+            const flowAmount = 0.1;
+            
+            this.positions[i3] += Math.sin(time * flowSpeed + i * 0.1) * flowAmount * 0.01;
+            this.positions[i3 + 1] += Math.cos(time * flowSpeed + i * 0.2) * flowAmount * 0.01;
+            this.positions[i3 + 2] += Math.sin(time * flowSpeed + i * 0.3) * flowAmount * 0.01;
+          } 
+          else {
+            // Background stars: subtle twinkling and slow rotation
+            const twinkle = Math.sin(time * 2 + i) * 0.3 + 0.7;
+            this.sizes[i] = (Math.random() * 0.5 + 0.3) * twinkle;
+            
+            // Very slow rotation around y-axis
+            const angle = deltaTime * 0.05;
+            const x = this.positions[i3];
+            const z = this.positions[i3 + 2];
+            
+            this.positions[i3] = x * Math.cos(angle) - z * Math.sin(angle);
+            this.positions[i3 + 2] = x * Math.sin(angle) + z * Math.cos(angle);
+          }
+        }
+        
+        // Update size attribute for twinkling effect
+        this.particles.geometry.attributes.size.needsUpdate = true;
+      } else if (shape === 'wave') {
+        // Animated wave
+        const time = this.clock.getElapsedTime();
+        
+        for (let i = 0; i < this.particleCount; i++) {
+          const i3 = i * 3;
+          
+          // Get original x and z
+          const x = this.positions[i3];
+          const z = this.positions[i3 + 2];
+          
+          // Animate the wave over time
+          const amplitude = 3 * this.scale;
+          const frequency = 3;
+          const speed = 1.5;
+          
+          // Calculate new y position with time-based animation
+          const y = amplitude * Math.sin(frequency * x + time * speed) * 
+                   Math.cos(frequency * z + time * speed * 0.7) + this.yOffset;
+          
+          // Apply new position
+          this.positions[i3 + 1] = y;
         }
       }
     }
@@ -350,8 +462,19 @@ class ParticleSystem {
     this.particles.geometry.attributes.position.needsUpdate = true;
   }
   
+  // Improved easing functions for smoother animations
   easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+  
+  easeInOutQuint(t) {
+    return t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2;
+  }
+  
+  easeOutBack(t) {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
   }
   
   animate() {
@@ -361,9 +484,6 @@ class ParticleSystem {
     
     // Update particles
     this.updateParticles(deltaTime);
-    
-    // Rotate the entire particle system for extra effect
-    this.particles.rotation.y += 0.001;
     
     // Render
     this.renderer.render(this.scene, this.camera);

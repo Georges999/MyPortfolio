@@ -82,32 +82,7 @@ function initDarkMode() {
   });
 }
 
-// Custom Cursor
-function initCustomCursor() {
-  const cursor = document.querySelector('.cursor');
-  
-  if (cursor && window.innerWidth > 1024) {
-    document.addEventListener('mousemove', function(e) {
-      cursor.style.left = e.clientX + 'px';
-      cursor.style.top = e.clientY + 'px';
-    });
-    
-    // Add hover effect for links and buttons
-    const hoverElements = document.querySelectorAll('a, button, .filter-btn, .theme-switch, .mobile-menu, .project-card, .social-link');
-    
-    hoverElements.forEach(element => {
-      element.addEventListener('mouseenter', function() {
-        cursor.style.transform = 'translate(-50%, -50%) scale(1.5)';
-        cursor.style.opacity = '0.5';
-      });
-      
-      element.addEventListener('mouseleave', function() {
-        cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-        cursor.style.opacity = '1';
-      });
-    });
-  }
-}
+// Custom Cursorfunction initCustomCursor() {  // Cursor functionality removed to eliminate white flash effect}
 
 // Scroll Events
 function initScrollEvents() {

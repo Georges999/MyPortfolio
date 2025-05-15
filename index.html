@@ -14,7 +14,6 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
 </head>
 <body>
-  <div class="cursor"></div>
   <header>
     <nav>
       <div class="logo">Portfolio</div>
@@ -43,19 +42,19 @@
         <div class="typing-text">I'm a <span class="typed-text"></span><span class="cursor">&nbsp;</span></div>
         <p class="hero-description">Turning ideas into reality through code</p>
         
-        <!-- Replace the robot container with particles canvas -->
+        <!-- Particles container -->
         <div id="particles-canvas"></div>
+        <div class="spacer"></div> <!-- Add a spacer to push content down -->
         
         <div class="particles-controls">
-          <button id="shape-sphere" class="particle-btn">Sphere</button>
-          <button id="shape-cube" class="particle-btn">Cube</button>
+          <button id="shape-sphere" class="particle-btn">Constellation</button>
+          <button id="shape-cube" class="particle-btn">Wave</button>
           <button id="shape-helix" class="particle-btn">Helix</button>
-          <button id="change-colors" class="particle-btn">Colors</button>
         </div>
         
         <div class="hero-buttons">
           <a href="#projects" class="btn primary-btn">View My Work</a>
-          <a href="#contact" class="btn secondary-btn">Contact Me</a>
+          <a href="#contact" class="btn primary-btn">Contact Me</a>
         </div>
         <div class="social-links">
           <a href="#" class="social-link"><i class="fab fa-github"></i></a>
