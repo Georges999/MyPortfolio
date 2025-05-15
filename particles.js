@@ -28,7 +28,17 @@ class ParticleSystem {
     this.startPositions = null;
     this.velocities = [];
     this.yOffset = 6; // Positive offset to position shapes higher
-    this.scale = 0.85; // Increased scale factor to make shapes bigger
+    this.scale = 1.1; // Increased scale factor to make shapes even larger
+    
+    // Mouse rotation control
+    this.isMouseDown = false;
+    this.rotationSpeed = 0.5;
+    this.targetRotationX = 0;
+    this.targetRotationY = 0;
+    this.mouseX = 0;
+    this.mouseY = 0;
+    this.lastMouseX = 0;
+    this.lastMouseY = 0;
     
     // Initialize only if container exists
     if (this.container) {
@@ -149,6 +159,14 @@ class ParticleSystem {
       this.transformToShape('helix');
     });
     
+    // Add listener for the new shape
+    const ribbonButton = document.getElementById('shape-ribbon');
+    if (ribbonButton) {
+      ribbonButton.addEventListener('click', () => {
+        this.transformToShape('ribbon');
+      });
+    }
+    
     // Dark mode listener
     const themeSwitch = document.querySelector('.theme-switch');
     if (themeSwitch) {
@@ -158,6 +176,102 @@ class ParticleSystem {
         }, 100);
       });
     }
+    
+    // Mouse interaction for rotation
+    this.container.addEventListener('mousedown', (event) => this.onMouseDown(event));
+    document.addEventListener('mousemove', (event) => this.onMouseMove(event));
+    document.addEventListener('mouseup', () => this.onMouseUp());
+    
+    // Touch events for mobile
+    this.container.addEventListener('touchstart', (event) => this.onTouchStart(event));
+    document.addEventListener('touchmove', (event) => this.onTouchMove(event));
+    document.addEventListener('touchend', () => this.onTouchEnd());
+  }
+  
+  // Mouse and touch event handlers
+  onMouseDown(event) {
+    event.preventDefault();
+    this.isMouseDown = true;
+    
+    const rect = this.container.getBoundingClientRect();
+    this.mouseX = event.clientX - rect.left;
+    this.mouseY = event.clientY - rect.top;
+    this.lastMouseX = this.mouseX;
+    this.lastMouseY = this.mouseY;
+    
+    // Change cursor to indicate dragging
+    document.body.style.cursor = 'grabbing';
+    this.container.style.cursor = 'grabbing';
+  }
+  
+  onMouseMove(event) {
+    if (!this.isMouseDown) return;
+    
+    const rect = this.container.getBoundingClientRect();
+    this.mouseX = event.clientX - rect.left;
+    this.mouseY = event.clientY - rect.top;
+    
+    // Calculate rotation delta
+    const deltaX = this.mouseX - this.lastMouseX;
+    const deltaY = this.mouseY - this.lastMouseY;
+    
+    this.lastMouseX = this.mouseX;
+    this.lastMouseY = this.mouseY;
+    
+    // Apply rotation based on mouse movement
+    this.targetRotationY += deltaX * 0.01 * this.rotationSpeed;
+    this.targetRotationX += deltaY * 0.01 * this.rotationSpeed;
+    
+    // Limit vertical rotation to avoid flipping
+    this.targetRotationX = Math.max(Math.min(this.targetRotationX, Math.PI / 2), -Math.PI / 2);
+  }
+  
+  onMouseUp() {
+    this.isMouseDown = false;
+    document.body.style.cursor = 'default';
+    this.container.style.cursor = 'grab';
+  }
+  
+  // Touch event handlers
+  onTouchStart(event) {
+    if (event.touches.length === 1) {
+      event.preventDefault();
+      this.isMouseDown = true;
+      
+      const rect = this.container.getBoundingClientRect();
+      this.mouseX = event.touches[0].clientX - rect.left;
+      this.mouseY = event.touches[0].clientY - rect.top;
+      this.lastMouseX = this.mouseX;
+      this.lastMouseY = this.mouseY;
+    }
+  }
+  
+  onTouchMove(event) {
+    if (this.isMouseDown && event.touches.length === 1) {
+      event.preventDefault();
+      
+      const rect = this.container.getBoundingClientRect();
+      this.mouseX = event.touches[0].clientX - rect.left;
+      this.mouseY = event.touches[0].clientY - rect.top;
+      
+      // Calculate rotation delta
+      const deltaX = this.mouseX - this.lastMouseX;
+      const deltaY = this.mouseY - this.lastMouseY;
+      
+      this.lastMouseX = this.mouseX;
+      this.lastMouseY = this.mouseY;
+      
+      // Apply rotation based on touch movement
+      this.targetRotationY += deltaX * 0.01 * this.rotationSpeed;
+      this.targetRotationX += deltaY * 0.01 * this.rotationSpeed;
+      
+      // Limit vertical rotation to avoid flipping
+      this.targetRotationX = Math.max(Math.min(this.targetRotationX, Math.PI / 2), -Math.PI / 2);
+    }
+  }
+  
+  onTouchEnd() {
+    this.isMouseDown = false;
   }
   
   calculateTargetPositions(shape) {
@@ -172,7 +286,46 @@ class ParticleSystem {
       this.startPositions[i3 + 2] = this.positions[i3 + 2];
       
       // Calculate target position based on shape
-      if (shape === 'constellation') {
+      if (shape === 'ribbon') {
+        // Smooth flowing ribbon shape - Möbius strip inspired shape
+        const t = i / this.particleCount;
+        const ribbonWidth = 10 * this.scale;
+        const ribbonHeight = 6 * this.scale;
+        const twists = 1; // Number of twists in the ribbon
+        
+        // Main ribbon path - follows a figure 8 / infinity pattern
+        const u = t * Math.PI * 2;
+        const majorRadius = ribbonWidth * 0.8;
+        const minorRadius = ribbonHeight * 0.5;
+        
+        // Create figure-8 base path
+        const figure8X = Math.sin(u) * majorRadius;
+        const figure8Y = Math.sin(u * 2) * minorRadius;
+        const figure8Z = Math.cos(u) * majorRadius * 0.5;
+        
+        // Add width to the ribbon
+        const ribbonThickness = 0.1;
+        const ribbonOffset = (Math.random() - 0.5) * ribbonWidth * ribbonThickness;
+        
+        // Calculate the cross-section of the ribbon
+        // This creates the width/thickness of the ribbon
+        const crossSection = Math.random();
+        const sectionWidth = ribbonWidth * 0.2;
+        
+        // Create the twist effect as the ribbon progresses
+        const twistAmount = u * twists;
+        const twistX = Math.cos(twistAmount) * ribbonOffset * crossSection;
+        const twistZ = Math.sin(twistAmount) * ribbonOffset * crossSection;
+        
+        // Apply a smooth flowing ribbon shape with some randomness
+        targetPositions[i3] = figure8X + twistX;
+        targetPositions[i3 + 1] = figure8Y + this.yOffset;
+        targetPositions[i3 + 2] = figure8Z + twistZ;
+        
+        // Vary particle size based on position on the ribbon
+        this.sizes[i] = Math.random() * 1.5 + 0.5;
+      }
+      else if (shape === 'constellation') {
         // Create an artistic constellation pattern
         // Divide particles into stars and connecting lines
         if (i < this.particleCount * 0.15) {
@@ -387,6 +540,45 @@ class ParticleSystem {
           this.positions[i3 + 1] -= dy * 0.03;
           this.positions[i3 + 2] -= dz * 0.03;
         }
+      } else if (shape === 'ribbon') {
+        // Flowing ribbon animation
+        const time = this.clock.getElapsedTime();
+        
+        for (let i = 0; i < this.particleCount; i++) {
+          const i3 = i * 3;
+          
+          // Get base position and add flowing movement
+          const x = this.targetPositions[i3];
+          const y = this.targetPositions[i3 + 1];
+          const z = this.targetPositions[i3 + 2];
+          
+          // Calculate flow offsets
+          const flowOffsetX = Math.sin(time * 0.5 + i * 0.01) * 0.05;
+          const flowOffsetY = Math.cos(time * 0.4 + i * 0.01) * 0.05;
+          const flowOffsetZ = Math.sin(time * 0.3 + i * 0.01) * 0.05;
+          
+          // Apply flowing movement
+          this.positions[i3] = x + flowOffsetX;
+          this.positions[i3 + 1] = y + flowOffsetY;
+          this.positions[i3 + 2] = z + flowOffsetZ;
+          
+          // Gently pull back to maintain overall shape
+          const pullStrength = 0.01;
+          const dx = this.positions[i3] - this.targetPositions[i3];
+          const dy = this.positions[i3 + 1] - this.targetPositions[i3 + 1];
+          const dz = this.positions[i3 + 2] - this.targetPositions[i3 + 2];
+          
+          this.positions[i3] -= dx * pullStrength;
+          this.positions[i3 + 1] -= dy * pullStrength;
+          this.positions[i3 + 2] -= dz * pullStrength;
+          
+          // Subtle size pulsation for flowing effect
+          const sizePulse = Math.sin(time + i * 0.1) * 0.2 + 1.0;
+          this.sizes[i] = (Math.random() * 0.5 + 0.5) * sizePulse;
+        }
+        
+        // Update sizes
+        this.particles.geometry.attributes.size.needsUpdate = true;
       } else if (shape === 'constellation') {
         // Animated constellation
         const time = this.clock.getElapsedTime();
@@ -460,6 +652,16 @@ class ParticleSystem {
     
     // Update the geometry
     this.particles.geometry.attributes.position.needsUpdate = true;
+    
+    // Apply rotation based on user interaction
+    if (!this.isMouseDown) {
+      // Automatic very slow rotation when not being dragged
+      this.particles.rotation.y += 0.001;
+    } else {
+      // Apply user-controlled rotation
+      this.particles.rotation.x += (this.targetRotationX - this.particles.rotation.x) * 0.1;
+      this.particles.rotation.y += (this.targetRotationY - this.particles.rotation.y) * 0.1;
+    }
   }
   
   // Improved easing functions for smoother animations
