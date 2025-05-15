@@ -148,7 +148,7 @@ class ParticleSystem {
   setupEventListeners() {
     // Shape morphing controls
     document.getElementById('shape-sphere').addEventListener('click', () => {
-      this.transformToShape('constellation');
+      this.transformToShape('bug');
     });
     
     document.getElementById('shape-cube').addEventListener('click', () => {
@@ -286,7 +286,233 @@ class ParticleSystem {
       this.startPositions[i3 + 2] = this.positions[i3 + 2];
       
       // Calculate target position based on shape
-      if (shape === 'ribbon') {
+      if (shape === 'bug') {
+        // Computer bug shape pattern
+        
+        // Determine which part of the bug this particle belongs to
+        const bugParts = {
+          body: 0.4,      // 40% for the body
+          head: 0.1,      // 10% for the head
+          legs: 0.3,      // 30% for legs
+          antennae: 0.1,  // 10% for antennae
+          details: 0.1    // 10% for additional details
+        };
+        
+        // Random value to determine which part
+        const partSelector = Math.random();
+        
+        // Sizes and positioning variables
+        const bodyLength = 10 * this.scale;
+        const bodyWidth = 5 * this.scale;
+        const bodyHeight = 3 * this.scale;
+        
+        // Default particle size - will be adjusted based on part
+        let particleSize = 0.6;
+        
+        // Position variables
+        let x, y, z;
+        
+        // BODY SECTION - Ellipsoid shape
+        if (partSelector < bugParts.body) {
+          // Create an ellipsoid for the bug body
+          const u = Math.random() * Math.PI * 2;
+          const v = Math.random() * Math.PI;
+          
+          // Layered ellipsoid for segments
+          const segmentCount = 5;
+          const segment = Math.floor(Math.random() * segmentCount);
+          
+          // Each segment is slightly smaller
+          const segmentRatio = 0.8 + (segment / segmentCount) * 0.2;
+          
+          // Position on ellipsoid
+          x = Math.cos(u) * Math.sin(v) * bodyWidth * 0.5 * segmentRatio;
+          y = Math.cos(v) * bodyHeight * 0.5 * segmentRatio + this.yOffset;
+          z = Math.sin(u) * Math.sin(v) * bodyLength * 0.5 * segmentRatio;
+          
+          // Shift position based on segment to create segmented body
+          z -= (segment - segmentCount/2) * bodyLength * 0.1;
+          
+          // Particle size varies slightly within the body
+          particleSize = Math.random() * 0.3 + 0.6;
+        }
+        // HEAD SECTION
+        else if (partSelector < bugParts.body + bugParts.head) {
+          // Create a spherical head at the front of the body
+          const u = Math.random() * Math.PI * 2;
+          const v = Math.random() * Math.PI;
+          const headRadius = bodyHeight * 0.6;
+          
+          // Position on sphere
+          x = Math.cos(u) * Math.sin(v) * headRadius;
+          y = Math.cos(v) * headRadius + this.yOffset;
+          z = Math.sin(u) * Math.sin(v) * headRadius + bodyLength * 0.5;
+          
+          // Eyes (small cluster of particles)
+          if (Math.random() > 0.7) {
+            const eyeOffset = headRadius * 0.7;
+            const eyeSize = headRadius * 0.3;
+            x = (Math.random() - 0.5) * eyeSize + (Math.random() > 0.5 ? eyeOffset : -eyeOffset);
+            y = eyeSize + this.yOffset + headRadius * 0.2;
+            z = bodyLength * 0.5 + headRadius * 0.7;
+            
+            // Eyes are smaller particles
+            particleSize = Math.random() * 0.2 + 0.3;
+          }
+        }
+        // LEGS SECTION
+        else if (partSelector < bugParts.body + bugParts.head + bugParts.legs) {
+          // Create 6 legs (3 on each side)
+          
+          // Determine which leg this particle belongs to
+          const legCount = 6;
+          const legIndex = Math.floor(Math.random() * legCount);
+          const leftSide = legIndex < 3; // First 3 legs on left side
+          
+          // Position along the body for this leg
+          const legPosition = (legIndex % 3) - 1; // -1, 0, or 1
+          const zOffset = legPosition * (bodyLength * 0.25);
+          
+          // Base position where leg connects to body
+          const baseX = leftSide ? -bodyWidth * 0.5 : bodyWidth * 0.5;
+          const baseY = -bodyHeight * 0.2 + this.yOffset;
+          const baseZ = zOffset;
+          
+          // Leg consists of segments with joints
+          const segmentCount = 3;
+          const segment = Math.floor(Math.random() * segmentCount);
+          
+          // Create leg with segments and joints
+          // Each segment extends outward and downward
+          let segmentLength, segmentAngle;
+          
+          if (segment === 0) {
+            // Upper leg segment (connected to body)
+            segmentLength = bodyWidth * 0.6;
+            segmentAngle = leftSide ? -0.3 : 0.3;
+            
+            const segmentRatio = Math.random();
+            x = baseX + (leftSide ? -1 : 1) * segmentLength * segmentRatio * Math.cos(segmentAngle);
+            y = baseY - segmentLength * segmentRatio * Math.sin(segmentAngle);
+            z = baseZ;
+          } 
+          else if (segment === 1) {
+            // Middle leg segment
+            segmentLength = bodyWidth * 0.7;
+            segmentAngle = leftSide ? -0.7 : 0.7;
+            
+            // Start from end of previous segment
+            const prevSegmentLength = bodyWidth * 0.6;
+            const prevSegmentAngle = leftSide ? -0.3 : 0.3;
+            const jointX = baseX + (leftSide ? -1 : 1) * prevSegmentLength * Math.cos(prevSegmentAngle);
+            const jointY = baseY - prevSegmentLength * Math.sin(prevSegmentAngle);
+            
+            const segmentRatio = Math.random();
+            x = jointX + (leftSide ? -1 : 1) * segmentLength * segmentRatio * Math.cos(segmentAngle);
+            y = jointY - segmentLength * segmentRatio * Math.sin(segmentAngle);
+            z = baseZ;
+          }
+          else {
+            // Lower leg segment (foot)
+            segmentLength = bodyWidth * 0.4;
+            segmentAngle = leftSide ? -1.2 : 1.2;
+            
+            // Calculate position based on previous joints
+            const midJointX = baseX + (leftSide ? -1 : 1) * bodyWidth * 0.6 * Math.cos(leftSide ? -0.3 : 0.3);
+            const midJointY = baseY - bodyWidth * 0.6 * Math.sin(leftSide ? -0.3 : 0.3);
+            
+            const prevSegmentLength = bodyWidth * 0.7;
+            const prevSegmentAngle = leftSide ? -0.7 : 0.7;
+            const jointX = midJointX + (leftSide ? -1 : 1) * prevSegmentLength * Math.cos(prevSegmentAngle);
+            const jointY = midJointY - prevSegmentLength * Math.sin(prevSegmentAngle);
+            
+            const segmentRatio = Math.random();
+            x = jointX + (leftSide ? -1 : 1) * segmentLength * segmentRatio * Math.cos(segmentAngle);
+            y = jointY - segmentLength * segmentRatio * Math.sin(segmentAngle);
+            z = baseZ;
+          }
+          
+          // Legs have smaller particles
+          particleSize = Math.random() * 0.2 + 0.4;
+        }
+        // ANTENNAE SECTION
+        else if (partSelector < bugParts.body + bugParts.head + bugParts.legs + bugParts.antennae) {
+          // Create a pair of antennae on the head
+          const leftAntenna = Math.random() > 0.5;
+          
+          // Base position on top of head
+          const baseX = leftAntenna ? -bodyHeight * 0.3 : bodyHeight * 0.3;
+          const baseY = bodyHeight * 0.7 + this.yOffset;
+          const baseZ = bodyLength * 0.5 + bodyHeight * 0.5; // Front of head
+          
+          // Antennae with curve
+          const t = Math.random(); // Position along antenna
+          const antennaLength = bodyLength * 0.7;
+          
+          // Create a curved path for the antenna
+          const curveX = baseX + (leftAntenna ? -1 : 1) * t * bodyWidth * 0.3;
+          const curveY = baseY + Math.sin(t * Math.PI) * bodyHeight * 0.8;
+          const curveZ = baseZ + t * antennaLength;
+          
+          // Add random movement near the antenna path
+          const spreadFactor = t * 0.5; // More spread at the tip
+          x = curveX + (Math.random() - 0.5) * spreadFactor;
+          y = curveY + (Math.random() - 0.5) * spreadFactor;
+          z = curveZ + (Math.random() - 0.5) * spreadFactor;
+          
+          // Antennae have small particles that get smaller toward tip
+          particleSize = (1 - t) * 0.3 + 0.1;
+        }
+        // ADDITIONAL DETAILS
+        else {
+          // Wings, features, etc.
+          const detail = Math.random();
+          
+          if (detail < 0.7) {
+            // Wings on top/back of the body
+            const leftWing = Math.random() > 0.5;
+            
+            // Wing base position
+            const wingOffset = bodyWidth * 0.3;
+            const wingLength = bodyLength * 0.6;
+            const wingWidth = bodyWidth * 0.8;
+            
+            // Position on wing
+            const u = Math.random(); // along length
+            const v = Math.random(); // along width
+            
+            // Create wing shape
+            x = (leftWing ? -1 : 1) * (wingOffset + v * wingWidth * 0.8 * Math.sin(u * Math.PI));
+            y = bodyHeight * 0.5 + this.yOffset + Math.sin(v * Math.PI) * bodyHeight * 0.1;
+            z = -bodyLength * 0.2 + u * wingLength;
+            
+            // Wings have translucent smaller particles
+            particleSize = Math.random() * 0.3 + 0.2;
+          } 
+          else {
+            // Small details like mandibles, textures
+            // Mandibles in front of head
+            const leftMandible = Math.random() > 0.5;
+            
+            const mandibleLength = bodyHeight * 0.4;
+            const t = Math.random(); // Position along mandible
+            
+            x = (leftMandible ? -1 : 1) * bodyHeight * 0.3 * (1 - t);
+            y = -bodyHeight * 0.2 * t + this.yOffset;
+            z = bodyLength * 0.5 + bodyHeight * 0.5 + mandibleLength * t;
+            
+            // Small detailed particles
+            particleSize = Math.random() * 0.2 + 0.2;
+          }
+        }
+        
+        // Set the final position and size
+        targetPositions[i3] = x;
+        targetPositions[i3 + 1] = y;
+        targetPositions[i3 + 2] = z;
+        this.sizes[i] = particleSize;
+      }
+      else if (shape === 'ribbon') {
         // Smooth flowing ribbon shape - Möbius strip inspired shape
         const t = i / this.particleCount;
         const ribbonWidth = 10 * this.scale;
@@ -325,107 +551,6 @@ class ParticleSystem {
         // Vary particle size based on position on the ribbon
         this.sizes[i] = Math.random() * 1.5 + 0.5;
       }
-      else if (shape === 'constellation') {
-        // Create an artistic constellation pattern
-        // Divide particles into stars and connecting lines
-        if (i < this.particleCount * 0.15) {
-          // Main constellation stars (15% of particles)
-          // Create clusters of stars in 3D space
-          
-          // Determine which cluster this star belongs to
-          const clusterCount = 7; // Number of main star clusters
-          const clusterId = Math.floor(i / (this.particleCount * 0.15) * clusterCount);
-          
-          // Each cluster has a base position
-          const clusterCenters = [
-            { x: 6, y: 3, z: 3 },
-            { x: -7, y: 5, z: -1 },
-            { x: 2, y: -4, z: 5 },
-            { x: -4, y: -6, z: -2 },
-            { x: 8, y: 7, z: -4 },
-            { x: -5, y: 8, z: 4 },
-            { x: 0, y: -2, z: -6 }
-          ];
-          
-          // Position stars around their cluster center with some randomness
-          const center = clusterCenters[clusterId];
-          const clusterRadius = 2.5 * this.scale;
-          
-          targetPositions[i3] = center.x * this.scale + (Math.random() - 0.5) * clusterRadius;
-          targetPositions[i3 + 1] = center.y * this.scale + (Math.random() - 0.5) * clusterRadius + this.yOffset;
-          targetPositions[i3 + 2] = center.z * this.scale + (Math.random() - 0.5) * clusterRadius;
-          
-          // These are larger "stars"
-          this.sizes[i] = Math.random() * 2.5 + 1.5;
-        } 
-        else if (i < this.particleCount * 0.5) {
-          // Connecting lines and dust between stars (35% of particles)
-          // Create lines that connect the main constellation stars
-          
-          // Pick two random cluster centers to connect
-          const clusterCount = 7;
-          const cluster1 = Math.floor(Math.random() * clusterCount);
-          let cluster2 = Math.floor(Math.random() * clusterCount);
-          while (cluster2 === cluster1) {
-            cluster2 = Math.floor(Math.random() * clusterCount);
-          }
-          
-          const clusterCenters = [
-            { x: 6, y: 3, z: 3 },
-            { x: -7, y: 5, z: -1 },
-            { x: 2, y: -4, z: 5 },
-            { x: -4, y: -6, z: -2 },
-            { x: 8, y: 7, z: -4 },
-            { x: -5, y: 8, z: 4 },
-            { x: 0, y: -2, z: -6 }
-          ];
-          
-          const from = clusterCenters[cluster1];
-          const to = clusterCenters[cluster2];
-          
-          // Position along the line with some noise
-          const t = Math.random();
-          const noiseAmount = 1.0 * this.scale;
-          
-          targetPositions[i3] = (from.x + (to.x - from.x) * t) * this.scale + (Math.random() - 0.5) * noiseAmount;
-          targetPositions[i3 + 1] = (from.y + (to.y - from.y) * t) * this.scale + (Math.random() - 0.5) * noiseAmount + this.yOffset;
-          targetPositions[i3 + 2] = (from.z + (to.z - from.z) * t) * this.scale + (Math.random() - 0.5) * noiseAmount;
-          
-          // These are smaller "dust" particles
-          this.sizes[i] = Math.random() * 0.8 + 0.2;
-        } 
-        else {
-          // Background stars (50% of particles) - create a cosmic feel
-          // Distributed spherically but with more interesting patterns
-          
-          // Spiral galaxy-like distribution
-          const arm = Math.floor(Math.random() * 3); // 3 spiral arms
-          const armAngle = arm * (Math.PI * 2 / 3);
-          const distFromCenter = Math.random() * 12 * this.scale;
-          const spiralTightness = 0.3;
-          
-          const spiralAngle = distFromCenter * spiralTightness + armAngle;
-          let x = Math.cos(spiralAngle) * distFromCenter;
-          let z = Math.sin(spiralAngle) * distFromCenter;
-          
-          // Add some vertical dimension
-          const y = (Math.random() - 0.5) * 6 * this.scale;
-          
-          // Flatten the spiral slightly
-          if (Math.random() > 0.2) {
-            const flattenAmount = 0.8;
-            x *= flattenAmount;
-            z *= flattenAmount;
-          }
-          
-          targetPositions[i3] = x;
-          targetPositions[i3 + 1] = y + this.yOffset;
-          targetPositions[i3 + 2] = z;
-          
-          // Varied sizes for background stars
-          this.sizes[i] = Math.random() * 1.0 + 0.3;
-        }
-      } 
       else if (shape === 'wave') {
         // Wave shape - fluid, aesthetic design
         const u = Math.random();
@@ -579,51 +704,81 @@ class ParticleSystem {
         
         // Update sizes
         this.particles.geometry.attributes.size.needsUpdate = true;
-      } else if (shape === 'constellation') {
-        // Animated constellation
+      } else if (shape === 'bug') {
+        // Animate the bug with subtle movements
         const time = this.clock.getElapsedTime();
         
         for (let i = 0; i < this.particleCount; i++) {
           const i3 = i * 3;
           
-          if (i < this.particleCount * 0.15) {
-            // Main stars: subtle pulsing effect
-            const pulseFactor = Math.sin(time + i * 0.1) * 0.05 + 1.0;
+          // Get base position
+          const x = this.targetPositions[i3];
+          const y = this.targetPositions[i3 + 1];
+          const z = this.targetPositions[i3 + 2];
+          
+          // Determine which part this is based on position and size
+          const isBody = Math.abs(x) < 3 * this.scale && Math.abs(z) < 6 * this.scale && this.sizes[i] > 0.5;
+          const isLeg = y < this.yOffset && this.sizes[i] < 0.5;
+          const isAntenna = z > 7 * this.scale && this.sizes[i] < 0.3;
+          const isWing = Math.abs(x) > 3 * this.scale && Math.abs(z) < 4 * this.scale && y > this.yOffset;
+          
+          // Different animation for different parts
+          if (isBody) {
+            // Subtle body pulsing - simulating breathing
+            const breathCycle = Math.sin(time * 1.5) * 0.03 + 1;
+            this.positions[i3] = x * breathCycle;
+            this.positions[i3 + 1] = y;
+            this.positions[i3 + 2] = z;
             
-            // Small random movement
-            this.positions[i3] += (Math.random() - 0.5) * 0.01;
-            this.positions[i3 + 1] += (Math.random() - 0.5) * 0.01;
-            this.positions[i3 + 2] += (Math.random() - 0.5) * 0.01;
-            
-            // Pulsing size effect
-            this.sizes[i] = (Math.random() * 1.5 + 1.5) * pulseFactor;
+            // Slight body movement
+            const bodyMovement = Math.sin(time * 0.8) * 0.05;
+            this.positions[i3 + 1] += bodyMovement;
           } 
-          else if (i < this.particleCount * 0.5) {
-            // Connecting lines: gentle flowing motion
-            const flowSpeed = 0.3;
-            const flowAmount = 0.1;
+          else if (isLeg) {
+            // Leg movement - walking motion
+            const legSpeed = 2;
+            const legMovement = Math.cos(time * legSpeed + x * 2) * 0.1;
             
-            this.positions[i3] += Math.sin(time * flowSpeed + i * 0.1) * flowAmount * 0.01;
-            this.positions[i3 + 1] += Math.cos(time * flowSpeed + i * 0.2) * flowAmount * 0.01;
-            this.positions[i3 + 2] += Math.sin(time * flowSpeed + i * 0.3) * flowAmount * 0.01;
+            // Move legs back and forth in z direction
+            this.positions[i3] = x;
+            this.positions[i3 + 1] = y;
+            this.positions[i3 + 2] = z + legMovement;
           } 
-          else {
-            // Background stars: subtle twinkling and slow rotation
-            const twinkle = Math.sin(time * 2 + i) * 0.3 + 0.7;
-            this.sizes[i] = (Math.random() * 0.5 + 0.3) * twinkle;
+          else if (isAntenna) {
+            // Antenna wiggling
+            const antennaWiggle = Math.sin(time * 3 + z) * 0.15 * (z / (7 * this.scale));
+            this.positions[i3] = x + antennaWiggle;
+            this.positions[i3 + 1] = y;
+            this.positions[i3 + 2] = z;
+          } 
+          else if (isWing) {
+            // Wing fluttering occasionally
+            const flutterFrequency = 5;
+            const flutterStrength = 0.12;
             
-            // Very slow rotation around y-axis
-            const angle = deltaTime * 0.05;
-            const x = this.positions[i3];
-            const z = this.positions[i3 + 2];
+            // Only flutter occasionally
+            const flutterCycle = Math.floor(time * 0.3) % 3; // 0, 1, 2
             
-            this.positions[i3] = x * Math.cos(angle) - z * Math.sin(angle);
-            this.positions[i3 + 2] = x * Math.sin(angle) + z * Math.cos(angle);
+            if (flutterCycle === 0) {
+              // Flutter wings
+              const flutter = Math.sin(time * flutterFrequency) * flutterStrength;
+              this.positions[i3] = x;
+              this.positions[i3 + 1] = y + flutter;
+              this.positions[i3 + 2] = z;
+            } else {
+              // Wings at rest
+              this.positions[i3] = x;
+              this.positions[i3 + 1] = y;
+              this.positions[i3 + 2] = z;
+            }
+          } else {
+            // Other parts - small random movements
+            const detailMovement = 0.02;
+            this.positions[i3] = x + (Math.random() - 0.5) * detailMovement;
+            this.positions[i3 + 1] = y + (Math.random() - 0.5) * detailMovement;
+            this.positions[i3 + 2] = z + (Math.random() - 0.5) * detailMovement;
           }
         }
-        
-        // Update size attribute for twinkling effect
-        this.particles.geometry.attributes.size.needsUpdate = true;
       } else if (shape === 'wave') {
         // Animated wave
         const time = this.clock.getElapsedTime();
