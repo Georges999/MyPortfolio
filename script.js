@@ -226,6 +226,9 @@ function initProjectFilter() {
   
   // Initialize dynamic project cards with 3D tilt effect
   initDynamicProjectCards();
+  
+  // Initialize project image navigation
+  initProjectImageNavigation();
 }
 
 // Dynamic Project Cards with 3D Tilt Effect
@@ -294,6 +297,106 @@ function initDynamicProjectCards() {
     card.addEventListener('mouseup', () => {
       card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1.03)';
     });
+  });
+}
+
+// Initialize project image navigation
+function initProjectImageNavigation() {
+  const projectCards = document.querySelectorAll('.project-card');
+
+  projectCards.forEach(card => {
+    const slides = card.querySelector('.project-img-slides');
+    if (!slides) return; // Skip if no slides container
+
+    const images = slides.querySelectorAll('img');
+    if (images.length <= 1) return; // Skip if only one image
+
+    const prevBtn = card.querySelector('.prev-img');
+    const nextBtn = card.querySelector('.next-img');
+    const counter = card.querySelector('.img-nav-counter');
+    
+    let currentIndex = 0;
+    const totalImages = images.length;
+
+    // Initialize slide width after images load
+    let slideWidth = 0;
+    
+    // Wait for images to load to get proper dimensions
+    Promise.all(Array.from(images).map(img => {
+      return new Promise(resolve => {
+        if (img.complete) {
+          resolve();
+        } else {
+          img.addEventListener('load', resolve);
+        }
+      });
+    })).then(() => {
+      slideWidth = slides.offsetWidth;
+      updateNavigation();
+    });
+
+    function updateSlidePosition() {
+      slides.style.transform = `translateX(${-currentIndex * 100}%)`;
+    }
+
+    function updateNavigation() {
+      // Update counter text
+      if (counter) {
+        counter.textContent = `${currentIndex + 1} / ${totalImages}`;
+      }
+
+      // Disable/enable buttons based on position
+      if (prevBtn) {
+        if (currentIndex === 0) {
+          prevBtn.classList.add('disabled');
+        } else {
+          prevBtn.classList.remove('disabled');
+        }
+      }
+
+      if (nextBtn) {
+        if (currentIndex === totalImages - 1) {
+          nextBtn.classList.add('disabled');
+        } else {
+          nextBtn.classList.remove('disabled');
+        }
+      }
+    }
+
+    // Previous button click event
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (currentIndex > 0) {
+          currentIndex--;
+          updateSlidePosition();
+          updateNavigation();
+        }
+      });
+    }
+
+    // Next button click event
+    if (nextBtn) {
+      nextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (currentIndex < totalImages - 1) {
+          currentIndex++;
+          updateSlidePosition();
+          updateNavigation();
+        }
+      });
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      slideWidth = slides.offsetWidth;
+      updateSlidePosition();
+    });
+
+    // Initialize
+    updateNavigation();
   });
 }
 
