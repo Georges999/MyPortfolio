@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Portfolio</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Three.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- GLTFLoader for 3D models -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.min.js"></script>
+  <!-- OrbitControls for interaction -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+</head>
+<body>
+  <div class="cursor"></div>
+  <header>
+    <nav>
+      <div class="logo">Portfolio</div>
+      <div class="nav-links">
+        <a href="#hero" class="nav-link">Home</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#projects" class="nav-link">Projects</a>
+        <a href="#experience" class="nav-link">Experience</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </div>
+      <div class="theme-switch">
+        <i class="fas fa-moon"></i>
+      </div>
+      <div class="mobile-menu">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section id="hero" class="hero">
+      <div class="hero-content">
+        <h1 class="glitch-text">Hi, I'm <span class="highlight">Your Name</span></h1>
+        <div class="typing-text">I'm a <span class="typed-text"></span><span class="cursor">&nbsp;</span></div>
+        <p class="hero-description">Turning ideas into reality through code</p>
+        
+        <!-- Replace the robot container with particles canvas -->
+        <div id="particles-canvas"></div>
+        
+        <div class="particles-controls">
+          <button id="shape-sphere" class="particle-btn">Sphere</button>
+          <button id="shape-cube" class="particle-btn">Cube</button>
+          <button id="shape-helix" class="particle-btn">Helix</button>
+          <button id="change-colors" class="particle-btn">Colors</button>
+        </div>
+        
+        <div class="hero-buttons">
+          <a href="#projects" class="btn primary-btn">View My Work</a>
+          <a href="#contact" class="btn secondary-btn">Contact Me</a>
+        </div>
+        <div class="social-links">
+          <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+          <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+          <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <div class="section-header">
+        <h2>About Me</h2>
+        <div class="underline"></div>
+      </div>
+      <div class="about-content">
+        <div class="about-image">
+          <div class="image-container">
+            <img src="assets/profile.jpg" alt="Profile Picture">
+          </div>
+        </div>
+        <div class="about-text">
+          <p>Hello! I'm a passionate developer with a keen interest in creating beautiful and functional web experiences. I enjoy tackling challenging problems and continuously learning new technologies.</p>
+          <p>When I'm not coding, you can find me hiking, reading, or experimenting with new recipes in the kitchen.</p>
+          <div class="skills">
+            <h3>My Skills</h3>
+            <div class="skill-bars">
+              <div class="skill">
+                <span class="skill-name">HTML/CSS</span>
+                <div class="skill-bar">
+                  <div class="skill-level" style="width: 90%;" data-level="90%"></div>
+                </div>
+              </div>
+              <div class="skill">
+                <span class="skill-name">JavaScript</span>
+                <div class="skill-bar">
+                  <div class="skill-level" style="width: 85%;" data-level="85%"></div>
+                </div>
+              </div>
+              <div class="skill">
+                <span class="skill-name">React</span>
+                <div class="skill-bar">
+                  <div class="skill-level" style="width: 80%;" data-level="80%"></div>
+                </div>
+              </div>
+              <div class="skill">
+                <span class="skill-name">Node.js</span>
+                <div class="skill-bar">
+                  <div class="skill-level" style="width: 75%;" data-level="75%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="assets/resume.pdf" class="btn primary-btn download-btn" download><i class="fas fa-download"></i> Download Resume</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="projects">
+      <div class="section-header">
+        <h2>My Projects</h2>
+        <div class="underline"></div>
+      </div>
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="web">Web</button>
+        <button class="filter-btn" data-filter="mobile">Mobile</button>
+        <button class="filter-btn" data-filter="other">Other</button>
+      </div>
+      <div class="projects-grid">
+        <div class="project-card" data-category="web">
+          <div class="project-img">
+            <img src="assets/project1.jpg" alt="Project 1">
+          </div>
+          <div class="project-content">
+            <h3>Project Title 1</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <div class="project-tech">
+              <span>HTML</span>
+              <span>CSS</span>
+              <span>JavaScript</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+              <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="project-card" data-category="mobile">
+          <div class="project-img">
+            <img src="assets/project2.jpg" alt="Project 2">
+          </div>
+          <div class="project-content">
+            <h3>Project Title 2</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <div class="project-tech">
+              <span>React Native</span>
+              <span>Firebase</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+              <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="project-card" data-category="web">
+          <div class="project-img">
+            <img src="assets/project3.jpg" alt="Project 3">
+          </div>
+          <div class="project-content">
+            <h3>Project Title 3</h3>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <div class="project-tech">
+              <span>React</span>
+              <span>Node.js</span>
+              <span>MongoDB</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+              <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience" class="experience">
+      <div class="section-header">
+        <h2>Experience</h2>
+        <div class="underline"></div>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-date">2021 - Present</div>
+            <h3>Senior Developer</h3>
+            <h4>Company Name</h4>
+            <p>Led development of web applications using React and Node.js. Collaborated with cross-functional teams to deliver high-quality products.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-date">2018 - 2021</div>
+            <h3>Frontend Developer</h3>
+            <h4>Company Name</h4>
+            <p>Developed responsive and accessible web interfaces. Worked on optimizing application performance and user experience.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-content">
+            <div class="timeline-date">2016 - 2018</div>
+            <h3>Junior Developer</h3>
+            <h4>Company Name</h4>
+            <p>Built and maintained websites using HTML, CSS, and JavaScript. Assisted senior developers with various tasks.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="section-header">
+        <h2>Get In Touch</h2>
+        <div class="underline"></div>
+      </div>
+      <div class="contact-content">
+        <div class="contact-info">
+          <div class="contact-item">
+            <i class="fas fa-envelope"></i>
+            <div>
+              <h3>Email</h3>
+              <p>youremail@example.com</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-phone"></i>
+            <div>
+              <h3>Phone</h3>
+              <p>+1 234 567 890</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-map-marker-alt"></i>
+            <div>
+              <h3>Location</h3>
+              <p>City, Country</p>
+            </div>
+          </div>
+        </div>
+        <form class="contact-form">
+          <div class="form-group">
+            <input type="text" id="name" placeholder="Your Name" required>
+          </div>
+          <div class="form-group">
+            <input type="email" id="email" placeholder="Your Email" required>
+          </div>
+          <div class="form-group">
+            <input type="text" id="subject" placeholder="Subject" required>
+          </div>
+          <div class="form-group">
+            <textarea id="message" placeholder="Your Message" required></textarea>
+          </div>
+          <button type="submit" class="btn primary-btn">Send Message</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      <p>&copy; 2023 Your Name. All Rights Reserved.</p>
+      <div class="footer-social">
+        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="back-to-top">
+    <i class="fas fa-arrow-up"></i>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="particles.js"></script>
+</body>
+</html>
