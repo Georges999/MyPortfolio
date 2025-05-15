@@ -203,41 +203,273 @@ function initProjectFilter() {
       
       const filterValue = this.getAttribute('data-filter');
       
-      projectCards.forEach(card => {
-        if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
-          card.style.display = 'block';
-          setTimeout(() => {
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-          }, 100);
-        } else {
-          card.style.opacity = '0';
-          card.style.transform = 'translateY(20px)';
-          setTimeout(() => {
+      // Add staggered animation
+      projectCards.forEach((card, index) => {
+        card.style.transform = 'scale(0.8) translateY(50px)';
+        card.style.opacity = '0';
+        
+        setTimeout(() => {
+          if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
+            card.style.display = 'block';
+            // Add a staggered delay based on the index
+            setTimeout(() => {
+              card.style.transform = 'scale(1) translateY(0)';
+              card.style.opacity = '1';
+            }, 50 * index);
+          } else {
             card.style.display = 'none';
-          }, 300);
-        }
+          }
+        }, 300);
       });
+    });
+  });
+  
+  // Initialize dynamic project cards with 3D tilt effect
+  initDynamicProjectCards();
+}
+
+// Dynamic Project Cards with 3D Tilt Effect
+function initDynamicProjectCards() {
+  const projectCards = document.querySelectorAll('.project-card');
+  
+  projectCards.forEach(card => {
+    // Store initial background state
+    const projectImg = card.querySelector('.project-img img');
+    const initialTransform = projectImg.style.transform;
+    
+    // Add tilt effect on mouse move
+    card.addEventListener('mousemove', (e) => {
+      const cardRect = card.getBoundingClientRect();
+      const cardCenterX = cardRect.left + cardRect.width / 2;
+      const cardCenterY = cardRect.top + cardRect.height / 2;
+      
+      // Calculate mouse position relative to card center (from -1 to 1)
+      const relativeX = (e.clientX - cardCenterX) / (cardRect.width / 2);
+      const relativeY = (e.clientY - cardCenterY) / (cardRect.height / 2);
+      
+      // Apply tilt effect with less intensity for better usability
+      const tiltAmount = 5; // Reduced from 10
+      card.style.transform = `perspective(1000px) rotateY(${relativeX * tiltAmount}deg) rotateX(${-relativeY * tiltAmount}deg) scale(1.03)`;
+      
+      // Create parallax effect for the image with subtle movement
+      if (projectImg) {
+        projectImg.style.transform = `translateX(${relativeX * -10}px) translateY(${relativeY * -10}px) scale(1.1)`;
+      }
+      
+      // Dynamic light reflection effect
+      const glare = card.querySelector('.card-glare') || document.createElement('div');
+      if (!card.querySelector('.card-glare')) {
+        glare.classList.add('card-glare');
+        card.appendChild(glare);
+      }
+      
+      // Position the glare based on mouse movement
+      glare.style.background = `radial-gradient(circle at ${e.clientX - cardRect.left}px ${e.clientY - cardRect.top}px, 
+                              rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%)`;
+    });
+    
+    // Reset card on mouse leave
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1)';
+      if (projectImg) {
+        projectImg.style.transform = initialTransform || 'none';
+      }
+      
+      const glare = card.querySelector('.card-glare');
+      if (glare) {
+        glare.style.opacity = '0';
+        setTimeout(() => {
+          if (glare.parentElement === card) {
+            card.removeChild(glare);
+          }
+        }, 300);
+      }
+    });
+    
+    // Add click animation
+    card.addEventListener('mousedown', () => {
+      card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(0.98)';
+    });
+    
+    card.addEventListener('mouseup', () => {
+      card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1.03)';
     });
   });
 }
 
-// Skill Bars Animation
+// Interactive Skills Visualization
 function initSkillAnimation() {
-  const skillLevels = document.querySelectorAll('.skill-level');
+  const canvas = document.getElementById('skills-canvas');
+  if (!canvas) return;
   
-  function animateSkills() {
-    skillLevels.forEach(level => {
-      const width = level.getAttribute('style').match(/width: (\d+)%/)[1];
-      level.style.width = '0%';
+  const ctx = canvas.getContext('2d');
+  const skillTags = document.querySelectorAll('.skill-tag');
+  
+  // Skills data from the tags
+  const skills = [];
+  skillTags.forEach(tag => {
+    skills.push({
+      name: tag.getAttribute('data-skill'),
+      value: parseInt(tag.getAttribute('data-value')),
+      color: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
+      accentColor: getComputedStyle(document.documentElement).getPropertyValue('--secondary-color'),
+      x: 0,
+      y: 0,
+      radius: 0,
+      targetRadius: 0,
+      highlighted: false,
+      hovering: false,
+    });
+  });
+
+  // Set canvas size
+  function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  
+  // Position skills
+  function positionSkills() {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const maxRadius = Math.min(canvas.width, canvas.height) * 0.35;
+    
+    skills.forEach((skill, i) => {
+      const angleStep = (2 * Math.PI) / skills.length;
+      const angle = i * angleStep;
       
-      setTimeout(() => {
-        level.style.width = width + '%';
-      }, 200);
+      // Position in a circle
+      skill.x = centerX + Math.cos(angle) * maxRadius * 0.8;
+      skill.y = centerY + Math.sin(angle) * maxRadius * 0.8;
+      
+      // Size based on skill value
+      skill.targetRadius = (skill.value / 100) * maxRadius * 0.5 + 20;
+      skill.radius = 0; // Start with zero radius for animation
     });
   }
   
-  // Animate skills when they come into view
+  // Mouse interaction
+  let mouseX = 0;
+  let mouseY = 0;
+  
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+    
+    // Check if mouse is hovering over any skill
+    skills.forEach(skill => {
+      const dist = Math.hypot(skill.x - mouseX, skill.y - mouseY);
+      skill.hovering = dist < skill.radius;
+    });
+  });
+  
+  canvas.addEventListener('click', () => {
+    // Toggle highlight on click
+    skills.forEach(skill => {
+      if (skill.hovering) {
+        skill.highlighted = !skill.highlighted;
+      }
+    });
+  });
+  
+  // Handle skill tag clicks
+  skillTags.forEach((tag, index) => {
+    tag.addEventListener('click', () => {
+      skillTags.forEach(t => t.classList.remove('active'));
+      tag.classList.add('active');
+      
+      // Reset all highlights then highlight the selected one
+      skills.forEach(s => s.highlighted = false);
+      skills[index].highlighted = true;
+    });
+  });
+  
+  // Draw the visualization
+  function drawSkills() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw connections between skills
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(108, 99, 255, 0.1)';
+    ctx.lineWidth = 1;
+    
+    for (let i = 0; i < skills.length; i++) {
+      for (let j = i + 1; j < skills.length; j++) {
+        ctx.moveTo(skills[i].x, skills[i].y);
+        ctx.lineTo(skills[j].x, skills[j].y);
+      }
+    }
+    ctx.stroke();
+    
+    // Draw skills bubbles
+    skills.forEach(skill => {
+      // Animate radius
+      skill.radius += (skill.targetRadius - skill.radius) * 0.1;
+      
+      // Create gradient
+      const gradient = ctx.createRadialGradient(
+        skill.x, skill.y, 0,
+        skill.x, skill.y, skill.radius
+      );
+      
+      if (skill.highlighted || skill.hovering) {
+        // Highlighted state
+        gradient.addColorStop(0, skill.accentColor + '99');
+        gradient.addColorStop(1, skill.accentColor + '22');
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = skill.accentColor;
+      } else {
+        // Normal state
+        gradient.addColorStop(0, skill.color + '77');
+        gradient.addColorStop(1, skill.color + '11');
+        ctx.shadowBlur = 0;
+      }
+      
+      // Draw circle
+      ctx.beginPath();
+      ctx.fillStyle = gradient;
+      ctx.arc(skill.x, skill.y, skill.radius, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Draw text
+      ctx.font = `${Math.max(12, skill.radius * 0.3)}px Poppins, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = skill.highlighted || skill.hovering ? '#ffffff' : '#333333';
+      if (document.body.classList.contains('dark-mode')) {
+        ctx.fillStyle = skill.highlighted || skill.hovering ? '#ffffff' : '#f0f0f0';
+      }
+      ctx.fillText(skill.name, skill.x, skill.y - 10);
+      ctx.fillText(`${skill.value}%`, skill.x, skill.y + 10);
+    });
+    
+    // Animate connections to mouse when hovering
+    if (skills.some(s => s.hovering)) {
+      const hoveringSkill = skills.find(s => s.hovering);
+      
+      ctx.beginPath();
+      ctx.strokeStyle = hoveringSkill.accentColor + '66';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      ctx.moveTo(mouseX, mouseY);
+      ctx.lineTo(hoveringSkill.x, hoveringSkill.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    
+    requestAnimationFrame(drawSkills);
+  }
+  
+  function animateSkills() {
+    positionSkills();
+    drawSkills();
+  }
+  
+  // Initialize skills animation
   const skillsSection = document.querySelector('.skills');
   
   if (skillsSection) {
@@ -248,29 +480,122 @@ function initSkillAnimation() {
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.5 });
+    }, { threshold: 0.3 });
     
     observer.observe(skillsSection);
   }
 }
 
-// Animations on scroll
+// Initialize animations for elements
 function initAnimations() {
-  const animatedElements = document.querySelectorAll('.hero-content, .about-content, .section-header, .projects-grid, .timeline, .contact-content');
+  // Common reveal configuration
+  const commonReveal = {
+    distance: '50px',
+    duration: 800,
+    delay: 200,
+    easing: 'cubic-bezier(0.5, 0, 0, 1)',
+    reset: false
+  };
   
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.style.animation = 'fadeIn 1s ease forwards';
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.1 });
+  // Initialize ScrollReveal
+  const sr = ScrollReveal();
   
-  animatedElements.forEach(element => {
-    element.style.opacity = '0';
-    observer.observe(element);
+  // Hero section animations
+  sr.reveal('.glitch-text', {
+    ...commonReveal,
+    origin: 'left',
+    delay: 300
   });
+  
+  sr.reveal('.typing-text', {
+    ...commonReveal,
+    origin: 'right',
+    delay: 600
+  });
+  
+  sr.reveal('.hero-description', {
+    ...commonReveal,
+    origin: 'bottom',
+    delay: 800
+  });
+  
+  sr.reveal('.particles-controls', {
+    ...commonReveal,
+    origin: 'bottom',
+    delay: 1000
+  });
+  
+  sr.reveal('.hero-buttons', {
+    ...commonReveal,
+    origin: 'bottom',
+    delay: 1100
+  });
+  
+  sr.reveal('.social-links', {
+    ...commonReveal,
+    origin: 'bottom',
+    delay: 1200
+  });
+  
+  // Section headers
+  sr.reveal('.section-header', {
+    ...commonReveal,
+    origin: 'top'
+  });
+  
+  // About section
+  sr.reveal('.about-image', {
+    ...commonReveal,
+    origin: 'left',
+    distance: '100px'
+  });
+  
+  sr.reveal('.about-text', {
+    ...commonReveal,
+    origin: 'right',
+    distance: '100px'
+  });
+  
+  // Projects section
+  sr.reveal('.filter-buttons', {
+    ...commonReveal,
+    origin: 'top'
+  });
+  
+  // Reveal project cards sequentially
+  const projectCards = document.querySelectorAll('.project-card');
+  projectCards.forEach((card, index) => {
+    sr.reveal(card, {
+      ...commonReveal,
+      origin: 'bottom',
+      interval: 200,
+      delay: 300 + (index * 100)
+    });
+  });
+  
+  // Experience section - timeline items
+  const timelineItems = document.querySelectorAll('.timeline-item');
+  timelineItems.forEach((item, index) => {
+    sr.reveal(item, {
+      ...commonReveal,
+      origin: index % 2 === 0 ? 'left' : 'right',
+      delay: 300 + (index * 150)
+    });
+  });
+  
+  // Contact section
+  sr.reveal('.contact-info', {
+    ...commonReveal,
+    origin: 'left'
+  });
+  
+  sr.reveal('.contact-form', {
+    ...commonReveal,
+    origin: 'right'
+  });
+  
+  // Animate skill bars after they are revealed
+  animateSkills();
 }
 
 // Contact Form Validation and Submit

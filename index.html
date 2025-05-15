@@ -12,6 +12,8 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.min.js"></script>
   <!-- OrbitControls for interaction -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+  <!-- ScrollReveal for scroll animations -->
+  <script src="https://unpkg.com/scrollreveal@4.0.9/dist/scrollreveal.min.js"></script>
 </head>
 <body>
   <header>
@@ -81,30 +83,17 @@
           <p>When I'm not coding, you can find me hiking, reading, or experimenting with new recipes in the kitchen.</p>
           <div class="skills">
             <h3>My Skills</h3>
-            <div class="skill-bars">
-              <div class="skill">
-                <span class="skill-name">HTML/CSS</span>
-                <div class="skill-bar">
-                  <div class="skill-level" style="width: 90%;" data-level="90%"></div>
-                </div>
-              </div>
-              <div class="skill">
-                <span class="skill-name">JavaScript</span>
-                <div class="skill-bar">
-                  <div class="skill-level" style="width: 85%;" data-level="85%"></div>
-                </div>
-              </div>
-              <div class="skill">
-                <span class="skill-name">React</span>
-                <div class="skill-bar">
-                  <div class="skill-level" style="width: 80%;" data-level="80%"></div>
-                </div>
-              </div>
-              <div class="skill">
-                <span class="skill-name">Node.js</span>
-                <div class="skill-bar">
-                  <div class="skill-level" style="width: 75%;" data-level="75%"></div>
-                </div>
+            <div class="skills-container">
+              <canvas id="skills-canvas"></canvas>
+              <div class="skill-tags">
+                <span class="skill-tag" data-skill="HTML/CSS" data-value="90">HTML/CSS</span>
+                <span class="skill-tag" data-skill="JavaScript" data-value="85">JavaScript</span>
+                <span class="skill-tag" data-skill="React" data-value="80">React</span>
+                <span class="skill-tag" data-skill="Node.js" data-value="75">Node.js</span>
+                <span class="skill-tag" data-skill="UI/UX" data-value="85">UI/UX</span>
+                <span class="skill-tag" data-skill="Git" data-value="88">Git</span>
+                <span class="skill-tag" data-skill="Responsive Design" data-value="92">Responsive Design</span>
+                <span class="skill-tag" data-skill="TypeScript" data-value="70">TypeScript</span>
               </div>
             </div>
           </div>
@@ -125,17 +114,37 @@
         <button class="filter-btn" data-filter="other">Other</button>
       </div>
       <div class="projects-grid">
-        <div class="project-card" data-category="web">
+        <div class="project-card featured" data-category="web">
           <div class="project-img">
-            <img src="assets/project1.jpg" alt="Project 1">
+            <img src="assets/project1.jpg" alt="Featured Project">
           </div>
           <div class="project-content">
-            <h3>Project Title 1</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <h3>Featured Project</h3>
+            <p>A comprehensive web application built with modern technologies. This project showcases advanced features like real-time data synchronization, user authentication, and responsive design principles.</p>
+            <div class="project-tech">
+              <span>React</span>
+              <span>Node.js</span>
+              <span>MongoDB</span>
+              <span>Socket.io</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+              <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="project-card" data-category="web">
+          <div class="project-img">
+            <img src="assets/project2.jpg" alt="Project 2">
+          </div>
+          <div class="project-content">
+            <h3>E-commerce Platform</h3>
+            <p>A complete online shopping solution with product catalog, shopping cart, and secure checkout functionality.</p>
             <div class="project-tech">
               <span>HTML</span>
               <span>CSS</span>
               <span>JavaScript</span>
+              <span>PHP</span>
             </div>
             <div class="project-links">
               <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
@@ -145,14 +154,33 @@
         </div>
         <div class="project-card" data-category="mobile">
           <div class="project-img">
-            <img src="assets/project2.jpg" alt="Project 2">
+            <img src="assets/project3.jpg" alt="Project 3">
           </div>
           <div class="project-content">
-            <h3>Project Title 2</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <h3>Fitness Tracker App</h3>
+            <p>Mobile application that helps users track workouts, set fitness goals, and monitor progress over time.</p>
             <div class="project-tech">
               <span>React Native</span>
+              <span>Redux</span>
               <span>Firebase</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+              <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="project-card" data-category="other">
+          <div class="project-img">
+            <img src="assets/project4.jpg" alt="Project 4">
+          </div>
+          <div class="project-content">
+            <h3>Data Visualization Tool</h3>
+            <p>Interactive dashboard for analyzing and visualizing complex datasets with customizable charts and graphs.</p>
+            <div class="project-tech">
+              <span>D3.js</span>
+              <span>Python</span>
+              <span>Flask</span>
             </div>
             <div class="project-links">
               <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
@@ -162,15 +190,33 @@
         </div>
         <div class="project-card" data-category="web">
           <div class="project-img">
-            <img src="assets/project3.jpg" alt="Project 3">
+            <img src="assets/project5.jpg" alt="Project 5">
           </div>
           <div class="project-content">
-            <h3>Project Title 3</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <h3>Weather Application</h3>
+            <p>Real-time weather forecasting app with location detection and interactive maps showing weather patterns.</p>
             <div class="project-tech">
-              <span>React</span>
-              <span>Node.js</span>
-              <span>MongoDB</span>
+              <span>JavaScript</span>
+              <span>API Integration</span>
+              <span>Leaflet.js</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+              <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="project-card" data-category="mobile">
+          <div class="project-img">
+            <img src="assets/project6.jpg" alt="Project 6">
+          </div>
+          <div class="project-content">
+            <h3>Recipe Finder</h3>
+            <p>Mobile app that allows users to discover recipes based on available ingredients and dietary preferences.</p>
+            <div class="project-tech">
+              <span>Flutter</span>
+              <span>Dart</span>
+              <span>Firebase</span>
             </div>
             <div class="project-links">
               <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
