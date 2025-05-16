@@ -1321,7 +1321,17 @@ footer {
 }
 
 .footer-content p {
+  margin-bottom: 10px;
+}
+
+.tech-note {
+  font-size: 0.8rem;
   color: var(--text-light);
+  opacity: 0.8;
+}
+
+.dark-mode .tech-note {
+  color: var(--dark-text-light);
 }
 
 .dark-mode .footer-content p {
