@@ -9,7 +9,7 @@ class ParticleSystem {
     this.positions = [];
     this.colors = [];
     this.sizes = [];
-    this.currentShape = 'wave'; // Default shape is wave
+    this.currentShape = 'ribbon'; // Default shape is now ribbon instead of wave
     this.container = document.getElementById('particles-canvas');
     this.clock = new THREE.Clock();
     this.raycaster = new THREE.Raycaster();
@@ -79,9 +79,9 @@ class ParticleSystem {
     // Start animation loop
     this.animate();
     
-    // Initialize with wave shape
+    // Initialize with ribbon shape instead of wave
     setTimeout(() => {
-      this.transformToShape('wave');
+      this.transformToShape('ribbon');
     }, 100);
   }
   
