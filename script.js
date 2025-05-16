@@ -419,7 +419,7 @@ function initProjectImageNavigation() {
   });
 }
 
-// Interactive Skills Visualization
+// Interactive Skills Visualization with performance optimization
 function initSkillAnimation() {
   const skillFlowContainer = document.getElementById('skill-flow');
   if (!skillFlowContainer) return;
@@ -445,13 +445,18 @@ function initSkillAnimation() {
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
   
-  // Initialize particle system
-  const particles = [];
-  const particleCount = 150;
-  const maxSpeed = 1.5;
+  // Detect system capabilities for performance optimization
+  const performanceLevel = getPerformanceLevel();
+  
+  // Initialize particle system with dynamic counts based on performance
+  const particleCount = performanceLevel.particleCount;
+  const maxSpeed = 1;
   const minRadius = 1;
-  const maxRadius = 3;
-  const connectionDistance = 100;
+  const maxRadius = performanceLevel.maxRadius;
+  const connectionDistance = performanceLevel.connectionDistance;
+  const particles = [];
+  
+  console.log(`Performance optimization: Level ${performanceLevel.level}, Particles: ${particleCount}`);
   
   // Create skill data
   const skills = [];
@@ -495,22 +500,11 @@ function initSkillAnimation() {
   canvas.addEventListener('mousedown', () => {
     isClicked = true;
     
-    // Create explosive particles on click
-    for (let i = 0; i < 20; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 5 + 2;
-      
-      particles.push({
-        x: mouseX,
-        y: mouseY,
-        radius: Math.random() * 2 + 2,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        color: secondaryColor,
-        alpha: 1,
-        life: 1, // Life value for animated particles
-        maxLife: 1
-      });
+    // Only add particles if performance level allows
+    if (performanceLevel.level >= 2) {
+      createExplosiveParticles(mouseX, mouseY, 15);
+    } else {
+      createExplosiveParticles(mouseX, mouseY, 5);
     }
   });
   
@@ -524,6 +518,26 @@ function initSkillAnimation() {
     isClicked = false;
   });
   
+  // Helper function to create explosive particles
+  function createExplosiveParticles(x, y, count) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 3 + 1;
+      
+      particles.push({
+        x: x,
+        y: y,
+        radius: Math.random() * 2 + 1,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        color: secondaryColor,
+        alpha: 1,
+        life: 1,
+        maxLife: 1
+      });
+    }
+  }
+  
   // Touch events for mobile
   canvas.addEventListener('touchstart', (e) => {
     if (e.touches.length > 0) {
@@ -532,22 +546,10 @@ function initSkillAnimation() {
       mouseY = e.touches[0].clientY - rect.top;
       isClicked = true;
       
-      // Create explosive particles
-      for (let i = 0; i < 20; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 5 + 2;
-        
-        particles.push({
-          x: mouseX,
-          y: mouseY,
-          radius: Math.random() * 2 + 2,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          color: secondaryColor,
-          alpha: 1,
-          life: 1,
-          maxLife: 1
-        });
+      if (performanceLevel.level >= 2) {
+        createExplosiveParticles(mouseX, mouseY, 10);
+      } else {
+        createExplosiveParticles(mouseX, mouseY, 3);
       }
     }
     
@@ -568,29 +570,38 @@ function initSkillAnimation() {
     isClicked = false;
   });
   
-  // Skill tag interactions
+  // Skill tag interactions - performance optimized
+  let lastInteractionTime = 0;
+  const interactionDelay = 500; // Limit interactions to every 500ms
+  
   skillTags.forEach((tag, index) => {
     tag.addEventListener('mouseenter', () => {
+      const now = Date.now();
+      if (now - lastInteractionTime < interactionDelay) return;
+      lastInteractionTime = now;
+      
       activeSkill = skills[index];
       activeSkill.active = true;
       
-      // Add more particles in active skill color
+      // Add particles for skills, optimized based on performance
       const skillValue = activeSkill.value;
-      const particlesToAdd = Math.floor(skillValue / 10); // More particles for higher skill values
+      const particlesToAdd = Math.floor(skillValue / 20) * performanceLevel.particleFactor;
       
-      for (let i = 0; i < particlesToAdd; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          radius: Math.random() * 2 + 2,
-          vx: (Math.random() - 0.5) * maxSpeed * 2,
-          vy: (Math.random() - 0.5) * maxSpeed * 2,
-          color: secondaryColor,
-          alpha: 0.8,
-          life: 1,
-          maxLife: 1,
-          skillParticle: true
-        });
+      if (particlesToAdd > 0) {
+        for (let i = 0; i < particlesToAdd; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            radius: Math.random() * 2 + 1,
+            vx: (Math.random() - 0.5) * maxSpeed * 2,
+            vy: (Math.random() - 0.5) * maxSpeed * 2,
+            color: secondaryColor,
+            alpha: 0.8,
+            life: 1,
+            maxLife: 1,
+            skillParticle: true
+          });
+        }
       }
       
       tag.classList.add('active');
@@ -605,6 +616,10 @@ function initSkillAnimation() {
     });
     
     tag.addEventListener('click', () => {
+      const now = Date.now();
+      if (now - lastInteractionTime < interactionDelay) return;
+      lastInteractionTime = now;
+      
       // Clear all active states
       skillTags.forEach((t, i) => {
         t.classList.remove('active');
@@ -616,66 +631,114 @@ function initSkillAnimation() {
       activeSkill = skills[index];
       activeSkill.active = true;
       
-      // Create a wave of particles emanating from the tag
-      const rect = tag.getBoundingClientRect();
-      const canvasRect = canvas.getBoundingClientRect();
-      
-      const centerX = (rect.left + rect.right) / 2 - canvasRect.left;
-      const centerY = rect.bottom - canvasRect.top + 20; // Start just below the tag
-      
-      for (let i = 0; i < 40; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 100 + 50;
-        const delay = Math.random() * 20;
-        
-        setTimeout(() => {
-          particles.push({
-            x: centerX,
-            y: centerY,
-            targetX: centerX + Math.cos(angle) * distance,
-            targetY: centerY + Math.sin(angle) * distance,
-            radius: Math.random() * 2 + 2,
-            vx: 0,
-            vy: 0,
-            color: secondaryColor,
-            alpha: 0.9,
-            life: 1,
-            maxLife: 1,
-            skillParticle: true,
-            wave: true
-          });
-        }, delay * 50);
+      // Only create wave effect if performance allows
+      if (performanceLevel.level >= 2) {
+        createSkillWave(tag, 30);
+      } else if (performanceLevel.level === 1) {
+        createSkillWave(tag, 15);
+      } else {
+        createSkillWave(tag, 5);
       }
     });
   });
   
-  // Animation functions
-  function drawParticleConnections() {
-    // Draw connections between nearby particles
+  // Create wave effect, optimized
+  function createSkillWave(tag, count) {
+    const rect = tag.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    const centerX = (rect.left + rect.right) / 2 - canvasRect.left;
+    const centerY = rect.bottom - canvasRect.top + 20;
+    
+    // Create fewer particles with staggered effect
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * 80 + 40;
+      const delay = Math.random() * 10;
+      
+      setTimeout(() => {
+        particles.push({
+          x: centerX,
+          y: centerY,
+          targetX: centerX + Math.cos(angle) * distance,
+          targetY: centerY + Math.sin(angle) * distance,
+          radius: Math.random() * 2 + 1,
+          vx: 0,
+          vy: 0,
+          color: secondaryColor,
+          alpha: 0.9,
+          life: 1,
+          maxLife: 1,
+          skillParticle: true,
+          wave: true
+        });
+      }, delay * 50);
+    }
+  }
+  
+  // Animation functions - optimized
+  let lastDrawConnectionsTime = 0;
+  const connectionFrameInterval = performanceLevel.connectionInterval;
+  
+  function drawParticleConnections(timestamp) {
+    // Only draw connections at intervals based on performance
+    if (timestamp - lastDrawConnectionsTime < connectionFrameInterval) return;
+    lastDrawConnectionsTime = timestamp;
+    
     ctx.lineWidth = 0.5;
     
+    // Create spatial hash grid for faster proximity checks
+    const gridSize = connectionDistance;
+    const grid = {};
+    
+    // Place particles in grid
+    particles.forEach((p, i) => {
+      const cellX = Math.floor(p.x / gridSize);
+      const cellY = Math.floor(p.y / gridSize);
+      const cellKey = `${cellX},${cellY}`;
+      
+      if (!grid[cellKey]) {
+        grid[cellKey] = [];
+      }
+      
+      grid[cellKey].push(i);
+    });
+    
+    // Check only nearby particles using grid
     for (let i = 0; i < particles.length; i++) {
-      for (let j = i + 1; j < particles.length; j++) {
-        const p1 = particles[i];
-        const p2 = particles[j];
-        
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < connectionDistance) {
-          const opacity = (1 - distance / connectionDistance) * 0.5 * p1.alpha * p2.alpha;
+      const p1 = particles[i];
+      const cellX = Math.floor(p1.x / gridSize);
+      const cellY = Math.floor(p1.y / gridSize);
+      
+      // Check adjacent cells only
+      for (let nx = -1; nx <= 1; nx++) {
+        for (let ny = -1; ny <= 1; ny++) {
+          const neighborKey = `${cellX + nx},${cellY + ny}`;
+          const neighbors = grid[neighborKey];
           
-          // Use gradient line for connections
-          const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-          gradient.addColorStop(0, `rgba(108, 99, 255, ${opacity})`);
-          gradient.addColorStop(1, `rgba(129, 200, 248, ${opacity})`);
+          if (!neighbors) continue;
           
-          ctx.strokeStyle = gradient;
-          ctx.beginPath();
-          ctx.moveTo(p1.x, p1.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
+          for (let j = 0; j < neighbors.length; j++) {
+            const neighborIndex = neighbors[j];
+            
+            // Skip if same particle or already checked
+            if (neighborIndex <= i) continue;
+            
+            const p2 = particles[neighborIndex];
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < connectionDistance) {
+              const opacity = (1 - distance / connectionDistance) * 0.4 * p1.alpha * p2.alpha;
+              
+              ctx.strokeStyle = `rgba(108, 99, 255, ${opacity})`;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          }
         }
       }
     }
@@ -685,24 +748,35 @@ function initSkillAnimation() {
     // Draw connections from mouse to nearby particles
     if (mouseX > 0 && mouseY > 0) {
       const mouseRadius = isClicked ? 150 : 100;
+      const mouseRadiusSq = mouseRadius * mouseRadius;
+      
+      // Limit number of connections based on performance
+      let connectionCount = 0;
+      const maxConnections = performanceLevel.mouseConnections;
       
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         const dx = p.x - mouseX;
         const dy = p.y - mouseY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distanceSq = dx * dx + dy * dy;
         
-        if (distance < mouseRadius) {
-          const opacity = (1 - distance / mouseRadius) * p.alpha;
+        if (distanceSq < mouseRadiusSq) {
+          // Limit connections
+          if (connectionCount < maxConnections) {
+            const distance = Math.sqrt(distanceSq);
+            const opacity = (1 - distance / mouseRadius) * p.alpha * 0.5;
+            
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(mouseX, mouseY);
+            ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+            
+            connectionCount++;
+          }
           
-          ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(mouseX, mouseY);
-          ctx.lineTo(p.x, p.y);
-          ctx.stroke();
-          
-          // Create attraction to mouse
+          // Create attraction to mouse - this is cheap so we keep it for all particles
           if (isClicked) {
             p.vx += dx * 0.02;
             p.vy += dy * 0.02;
@@ -713,40 +787,61 @@ function initSkillAnimation() {
         }
       }
       
-      // Draw mouse indicator
-      ctx.beginPath();
-      const gradient = ctx.createRadialGradient(
-        mouseX, mouseY, 0,
-        mouseX, mouseY, isClicked ? 30 : 20
-      );
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = gradient;
-      ctx.arc(mouseX, mouseY, isClicked ? 30 : 20, 0, Math.PI * 2);
-      ctx.fill();
+      // Draw mouse indicator if performance allows
+      if (performanceLevel.mouseGlow) {
+        ctx.beginPath();
+        const gradient = ctx.createRadialGradient(
+          mouseX, mouseY, 0,
+          mouseX, mouseY, isClicked ? 30 : 20
+        );
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = gradient;
+        ctx.arc(mouseX, mouseY, isClicked ? 30 : 20, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
   }
   
-  function createFlowField() {
-    // Calculate time for continuous flow changes
-    const time = Date.now() * 0.001;
-    const flowScale = 0.005;
+  // Simplified flow field for better performance
+  const flowGridSize = 40;  // Larger grid = fewer calculations
+  let flowField = [];
+  let flowTime = 0;
+  
+  function createSimplifiedFlowField() {
+    // Only update flow field periodically
+    flowTime += 0.001;
     
-    // Update flow field at regular intervals
-    const flowField = [];
-    const gridSize = 20;
-    const cols = Math.ceil(canvas.width / gridSize);
-    const rows = Math.ceil(canvas.height / gridSize);
-    
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        // Using simplex noise formula (simplified)
-        const angle = Math.sin(x * flowScale + time) * Math.cos(y * flowScale + time) * Math.PI * 2;
-        flowField.push(angle);
+    // Create or update flow field
+    if (flowField.length === 0) {
+      const cols = Math.ceil(canvas.width / flowGridSize);
+      const rows = Math.ceil(canvas.height / flowGridSize);
+      
+      flowField = new Array(cols * rows);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const angle = Math.sin(x * 0.1 + flowTime) * Math.cos(y * 0.1 + flowTime) * Math.PI * 2;
+          flowField[y * cols + x] = angle;
+        }
       }
+      
+      return { flowField, cols, rows, gridSize: flowGridSize };
+    } else {
+      const cols = Math.ceil(canvas.width / flowGridSize);
+      const rows = Math.ceil(canvas.height / flowGridSize);
+      
+      // Update every 4th cell for performance
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if ((x + y) % 4 === 0) {  // Only update a subset of cells each frame
+            const angle = Math.sin(x * 0.1 + flowTime) * Math.cos(y * 0.1 + flowTime) * Math.PI * 2;
+            flowField[y * cols + x] = angle;
+          }
+        }
+      }
+      
+      return { flowField, cols, rows, gridSize: flowGridSize };
     }
-    
-    return { flowField, cols, rows, gridSize };
   }
   
   function applyFlowFieldForces(flow) {
@@ -760,12 +855,14 @@ function initSkillAnimation() {
       
       if (x >= 0 && x < cols && y >= 0 && y < Math.ceil(canvas.height / gridSize)) {
         const index = y * cols + x;
-        const angle = flowField[index];
-        
-        // Apply force based on flow angle
-        const force = p.wave ? 0.05 : 0.01;
-        p.vx += Math.cos(angle) * force;
-        p.vy += Math.sin(angle) * force;
+        if (index < flowField.length) {
+          const angle = flowField[index];
+          
+          // Apply force based on flow angle
+          const force = p.wave ? 0.05 : 0.01;
+          p.vx += Math.cos(angle) * force;
+          p.vy += Math.sin(angle) * force;
+        }
       }
     });
   }
@@ -785,25 +882,25 @@ function initSkillAnimation() {
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       ctx.fill();
       
-      // Add glow effect for larger particles
-      if (p.radius > 2) {
+      // Add glow effect only for larger particles and if performance allows
+      if (p.radius > 2 && performanceLevel.particleGlow) {
         ctx.beginPath();
         const gradient = ctx.createRadialGradient(
           p.x, p.y, 0,
-          p.x, p.y, p.radius * 3
+          p.x, p.y, p.radius * 2
         );
-        gradient.addColorStop(0, `rgba(${hexToRgb(p.color || primaryColor)}, 0.3)`);
+        gradient.addColorStop(0, `rgba(${hexToRgb(p.color || primaryColor)}, 0.2)`);
         gradient.addColorStop(1, `rgba(${hexToRgb(p.color || primaryColor)}, 0)`);
         ctx.fillStyle = gradient;
-        ctx.arc(p.x, p.y, p.radius * 3, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.radius * 2, 0, Math.PI * 2);
         ctx.fill();
       }
     });
   }
   
   function updateParticles() {
-    // Create flow field
-    const flow = createFlowField();
+    // Create flow field - simplified for performance
+    const flow = createSimplifiedFlowField();
     
     // Apply flow forces
     applyFlowFieldForces(flow);
@@ -814,7 +911,7 @@ function initSkillAnimation() {
       
       // Update position
       p.x += p.vx;
-      p.vy += 0.01; // Slight downward drift
+      p.vy += 0.005; // Reduced drift for performance
       p.y += p.vy;
       
       // Apply damping
@@ -827,11 +924,12 @@ function initSkillAnimation() {
         p.y += (p.targetY - p.y) * 0.03;
       }
       
-      // Handle boundaries
-      if (p.x < 0) p.x = canvas.width;
-      if (p.x > canvas.width) p.x = 0;
-      if (p.y < 0) p.y = canvas.height;
-      if (p.y > canvas.height) p.y = 0;
+      // Optimized boundary check - wrap around with buffer
+      const buffer = 10;
+      if (p.x < -buffer) p.x = canvas.width + buffer;
+      if (p.x > canvas.width + buffer) p.x = -buffer;
+      if (p.y < -buffer) p.y = canvas.height + buffer;
+      if (p.y > canvas.height + buffer) p.y = -buffer;
       
       // Handle life for temporary particles
       if (p.life !== undefined) {
@@ -845,13 +943,25 @@ function initSkillAnimation() {
     }
   }
   
-  function animate() {
-    // Clear canvas
+  // Performance optimized animation loop with frame throttling
+  let lastFrameTime = 0;
+  const minFrameInterval = performanceLevel.frameInterval;
+  
+  function animate(timestamp) {
+    // Throttle frames if needed
+    if (timestamp - lastFrameTime < minFrameInterval) {
+      requestAnimationFrame(animate);
+      return;
+    }
+    
+    lastFrameTime = timestamp;
+    
+    // Clear canvas with slight optimization (only clear visible area)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     // Update and draw particles
     updateParticles();
-    drawParticleConnections();
+    drawParticleConnections(timestamp);
     drawParticles();
     drawMouseConnections();
     
@@ -870,17 +980,101 @@ function initSkillAnimation() {
     }
     
     // Parse the hex values
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
+    const r = parseInt(hex.substring(0, 2), 16) || 0;
+    const g = parseInt(hex.substring(2, 4), 16) || 0;
+    const b = parseInt(hex.substring(4, 6), 16) || 0;
     
     return `${r}, ${g}, ${b}`;
   }
   
-  // Initialize
+  // Performance detection function
+  function getPerformanceLevel() {
+    // Check if running on mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Check if browser supports performance API
+    if (window.performance && window.performance.memory) {
+      const memory = window.performance.memory;
+      
+      if (isMobile) {
+        return {
+          level: 1, // Low for all mobile devices
+          particleCount: 50,
+          maxRadius: 2,
+          connectionDistance: 60,
+          mouseConnections: 5,
+          mouseGlow: false,
+          particleGlow: false,
+          connectionInterval: 100,
+          frameInterval: 24,
+          particleFactor: 0.5
+        };
+      }
+      
+      // Basic heuristics for desktop
+      if (memory.jsHeapSizeLimit > 2000000000) {
+        return {
+          level: 3, // High-end
+          particleCount: 100,
+          maxRadius: 3,
+          connectionDistance: 100,
+          mouseConnections: 25,
+          mouseGlow: true,
+          particleGlow: true,
+          connectionInterval: 30,
+          frameInterval: 0,
+          particleFactor: 1
+        };
+      } else {
+        return {
+          level: 2, // Mid-range
+          particleCount: 75,
+          maxRadius: 2.5,
+          connectionDistance: 80,
+          mouseConnections: 15,
+          mouseGlow: true,
+          particleGlow: false,
+          connectionInterval: 50,
+          frameInterval: 16,
+          particleFactor: 0.75
+        };
+      }
+    } else {
+      // Fallback if performance API not available
+      if (isMobile) {
+        return {
+          level: 0, // Very low for mobile without detection
+          particleCount: 30,
+          maxRadius: 2,
+          connectionDistance: 50,
+          mouseConnections: 3,
+          mouseGlow: false,
+          particleGlow: false,
+          connectionInterval: 150,
+          frameInterval: 33,
+          particleFactor: 0.3
+        };
+      } else {
+        return {
+          level: 1, // Conservative for desktop without detection
+          particleCount: 60,
+          maxRadius: 2,
+          connectionDistance: 70,
+          mouseConnections: 10,
+          mouseGlow: false,
+          particleGlow: false,
+          connectionInterval: 80,
+          frameInterval: 20,
+          particleFactor: 0.5
+        };
+      }
+    }
+  }
+  
+  // Initialize with performance optimizations
   function init() {
     createParticles();
-    animate();
+    requestAnimationFrame(animate);
   }
   
   // Start animation when skills section becomes visible
@@ -894,7 +1088,7 @@ function initSkillAnimation() {
           observer.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.3 });
+    }, { threshold: 0.2 }); // Lower threshold for earlier loading
     
     observer.observe(skillsSection);
   } else {
