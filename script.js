@@ -151,7 +151,7 @@ function initScrollEvents() {
 // Typing Effect
 function initTypingEffect() {
   const typedTextElement = document.querySelector('.typed-text');
-  const roles = ['Web Developer', 'UI/UX Designer', 'Problem Solver', 'Creative Thinker'];
+  const roles = ['Software Engineering Student', 'Cybersecurity Enthusiast', 'App Developer', 'Game Developer'];
   let roleIndex = 0;
   let charIndex = 0;
   let isDeleting = false;
@@ -193,6 +193,33 @@ function initProjectFilter() {
   const filterBtns = document.querySelectorAll('.filter-btn');
   const projectCards = document.querySelectorAll('.project-card');
   
+  // Function to filter projects
+  function filterProjects(filterValue) {
+    console.log("Filtering projects:", filterValue); // Debug
+    
+    projectCards.forEach((card, index) => {
+      const cardCategory = card.getAttribute('data-category');
+      console.log("Card category:", cardCategory); // Debug
+      
+      card.style.transform = 'scale(0.8) translateY(50px)';
+      card.style.opacity = '0';
+      
+      setTimeout(() => {
+        if (filterValue === 'all' || cardCategory === filterValue) {
+          card.style.display = 'block';
+          // Add a staggered delay based on the index
+          setTimeout(() => {
+            card.style.transform = 'scale(1) translateY(0)';
+            card.style.opacity = '1';
+          }, 50 * index);
+        } else {
+          card.style.display = 'none';
+        }
+      }, 300);
+    });
+  }
+  
+  // Set up click events for filter buttons
   filterBtns.forEach(btn => {
     btn.addEventListener('click', function() {
       // Remove active class from all buttons
@@ -202,27 +229,16 @@ function initProjectFilter() {
       this.classList.add('active');
       
       const filterValue = this.getAttribute('data-filter');
-      
-      // Add staggered animation
-      projectCards.forEach((card, index) => {
-        card.style.transform = 'scale(0.8) translateY(50px)';
-        card.style.opacity = '0';
-        
-        setTimeout(() => {
-          if (filterValue === 'all' || card.getAttribute('data-category') === filterValue) {
-            card.style.display = 'block';
-            // Add a staggered delay based on the index
-            setTimeout(() => {
-              card.style.transform = 'scale(1) translateY(0)';
-              card.style.opacity = '1';
-            }, 50 * index);
-          } else {
-            card.style.display = 'none';
-          }
-        }, 300);
-      });
+      filterProjects(filterValue);
     });
   });
+  
+  // Initialize with "all" filter active
+  const activeFilterBtn = document.querySelector('.filter-btn.active');
+  if (activeFilterBtn) {
+    const initialFilter = activeFilterBtn.getAttribute('data-filter');
+    filterProjects(initialFilter);
+  }
   
   // Initialize dynamic project cards with 3D tilt effect
   initDynamicProjectCards();
