@@ -82,7 +82,10 @@ function initDarkMode() {
   });
 }
 
-// Custom Cursorfunction initCustomCursor() {  // Cursor functionality removed to eliminate white flash effect}
+// Custom Cursor
+function initCustomCursor() {
+  // No cursor functionality to avoid white flash effect
+}
 
 // Scroll Events
 function initScrollEvents() {
@@ -418,190 +421,485 @@ function initProjectImageNavigation() {
 
 // Interactive Skills Visualization
 function initSkillAnimation() {
-  const canvas = document.getElementById('skills-canvas');
-  if (!canvas) return;
+  const skillFlowContainer = document.getElementById('skill-flow');
+  if (!skillFlowContainer) return;
   
-  const ctx = canvas.getContext('2d');
   const skillTags = document.querySelectorAll('.skill-tag');
   
-  // Skills data from the tags
-  const skills = [];
-  skillTags.forEach(tag => {
-    skills.push({
-      name: tag.getAttribute('data-skill'),
-      value: parseInt(tag.getAttribute('data-value')),
-      color: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
-      accentColor: getComputedStyle(document.documentElement).getPropertyValue('--secondary-color'),
-      x: 0,
-      y: 0,
-      radius: 0,
-      targetRadius: 0,
-      highlighted: false,
-      hovering: false,
-    });
-  });
-
+  // Create canvas element
+  const canvas = document.createElement('canvas');
+  skillFlowContainer.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  
+  // Get primary and secondary colors from CSS variables
+  const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+  const secondaryColor = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim();
+  
   // Set canvas size
   function resizeCanvas() {
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    const rect = skillFlowContainer.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
   }
   
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
   
-  // Position skills
-  function positionSkills() {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const maxRadius = Math.min(canvas.width, canvas.height) * 0.35;
-    
-    skills.forEach((skill, i) => {
-      const angleStep = (2 * Math.PI) / skills.length;
-      const angle = i * angleStep;
-      
-      // Position in a circle
-      skill.x = centerX + Math.cos(angle) * maxRadius * 0.8;
-      skill.y = centerY + Math.sin(angle) * maxRadius * 0.8;
-      
-      // Size based on skill value
-      skill.targetRadius = (skill.value / 100) * maxRadius * 0.5 + 20;
-      skill.radius = 0; // Start with zero radius for animation
+  // Initialize particle system
+  const particles = [];
+  const particleCount = 150;
+  const maxSpeed = 1.5;
+  const minRadius = 1;
+  const maxRadius = 3;
+  const connectionDistance = 100;
+  
+  // Create skill data
+  const skills = [];
+  skillTags.forEach(tag => {
+    skills.push({
+      name: tag.getAttribute('data-skill'),
+      value: parseInt(tag.getAttribute('data-value')),
+      element: tag,
+      active: false
     });
+  });
+  
+  // Create particles
+  function createParticles() {
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * (maxRadius - minRadius) + minRadius,
+        vx: (Math.random() - 0.5) * maxSpeed,
+        vy: (Math.random() - 0.5) * maxSpeed,
+        color: Math.random() > 0.8 ? secondaryColor : primaryColor,
+        alpha: Math.random() * 0.5 + 0.5
+      });
+    }
   }
   
-  // Mouse interaction
-  let mouseX = 0;
-  let mouseY = 0;
+  // Handle interactions
+  let mouseX = -1000;
+  let mouseY = -1000;
+  let isClicked = false;
+  let activeSkill = null;
   
+  // Mouse interactions
   canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
     mouseX = e.clientX - rect.left;
     mouseY = e.clientY - rect.top;
+  });
+  
+  canvas.addEventListener('mousedown', () => {
+    isClicked = true;
     
-    // Check if mouse is hovering over any skill
-    skills.forEach(skill => {
-      const dist = Math.hypot(skill.x - mouseX, skill.y - mouseY);
-      skill.hovering = dist < skill.radius;
-    });
-  });
-  
-  canvas.addEventListener('click', () => {
-    // Toggle highlight on click
-    skills.forEach(skill => {
-      if (skill.hovering) {
-        skill.highlighted = !skill.highlighted;
-      }
-    });
-  });
-  
-  // Handle skill tag clicks
-  skillTags.forEach((tag, index) => {
-    tag.addEventListener('click', () => {
-      skillTags.forEach(t => t.classList.remove('active'));
-      tag.classList.add('active');
+    // Create explosive particles on click
+    for (let i = 0; i < 20; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 5 + 2;
       
-      // Reset all highlights then highlight the selected one
-      skills.forEach(s => s.highlighted = false);
-      skills[index].highlighted = true;
-    });
+      particles.push({
+        x: mouseX,
+        y: mouseY,
+        radius: Math.random() * 2 + 2,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        color: secondaryColor,
+        alpha: 1,
+        life: 1, // Life value for animated particles
+        maxLife: 1
+      });
+    }
   });
   
-  // Draw the visualization
-  function drawSkills() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw connections between skills
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgba(108, 99, 255, 0.1)';
-    ctx.lineWidth = 1;
-    
-    for (let i = 0; i < skills.length; i++) {
-      for (let j = i + 1; j < skills.length; j++) {
-        ctx.moveTo(skills[i].x, skills[i].y);
-        ctx.lineTo(skills[j].x, skills[j].y);
+  canvas.addEventListener('mouseup', () => {
+    isClicked = false;
+  });
+  
+  canvas.addEventListener('mouseleave', () => {
+    mouseX = -1000;
+    mouseY = -1000;
+    isClicked = false;
+  });
+  
+  // Touch events for mobile
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.touches[0].clientX - rect.left;
+      mouseY = e.touches[0].clientY - rect.top;
+      isClicked = true;
+      
+      // Create explosive particles
+      for (let i = 0; i < 20; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        
+        particles.push({
+          x: mouseX,
+          y: mouseY,
+          radius: Math.random() * 2 + 2,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          color: secondaryColor,
+          alpha: 1,
+          life: 1,
+          maxLife: 1
+        });
       }
     }
-    ctx.stroke();
     
-    // Draw skills bubbles
-    skills.forEach(skill => {
-      // Animate radius
-      skill.radius += (skill.targetRadius - skill.radius) * 0.1;
+    e.preventDefault();
+  }, { passive: false });
+  
+  canvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length > 0) {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = e.touches[0].clientX - rect.left;
+      mouseY = e.touches[0].clientY - rect.top;
+    }
+    
+    e.preventDefault();
+  }, { passive: false });
+  
+  canvas.addEventListener('touchend', () => {
+    isClicked = false;
+  });
+  
+  // Skill tag interactions
+  skillTags.forEach((tag, index) => {
+    tag.addEventListener('mouseenter', () => {
+      activeSkill = skills[index];
+      activeSkill.active = true;
       
-      // Create gradient
-      const gradient = ctx.createRadialGradient(
-        skill.x, skill.y, 0,
-        skill.x, skill.y, skill.radius
-      );
+      // Add more particles in active skill color
+      const skillValue = activeSkill.value;
+      const particlesToAdd = Math.floor(skillValue / 10); // More particles for higher skill values
       
-      if (skill.highlighted || skill.hovering) {
-        // Highlighted state
-        gradient.addColorStop(0, skill.accentColor + '99');
-        gradient.addColorStop(1, skill.accentColor + '22');
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = skill.accentColor;
-      } else {
-        // Normal state
-        gradient.addColorStop(0, skill.color + '77');
-        gradient.addColorStop(1, skill.color + '11');
-        ctx.shadowBlur = 0;
+      for (let i = 0; i < particlesToAdd; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 2 + 2,
+          vx: (Math.random() - 0.5) * maxSpeed * 2,
+          vy: (Math.random() - 0.5) * maxSpeed * 2,
+          color: secondaryColor,
+          alpha: 0.8,
+          life: 1,
+          maxLife: 1,
+          skillParticle: true
+        });
       }
       
-      // Draw circle
+      tag.classList.add('active');
+    });
+    
+    tag.addEventListener('mouseleave', () => {
+      if (activeSkill === skills[index]) {
+        activeSkill.active = false;
+        activeSkill = null;
+      }
+      tag.classList.remove('active');
+    });
+    
+    tag.addEventListener('click', () => {
+      // Clear all active states
+      skillTags.forEach((t, i) => {
+        t.classList.remove('active');
+        skills[i].active = false;
+      });
+      
+      // Set this skill as active
+      tag.classList.add('active');
+      activeSkill = skills[index];
+      activeSkill.active = true;
+      
+      // Create a wave of particles emanating from the tag
+      const rect = tag.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+      
+      const centerX = (rect.left + rect.right) / 2 - canvasRect.left;
+      const centerY = rect.bottom - canvasRect.top + 20; // Start just below the tag
+      
+      for (let i = 0; i < 40; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 100 + 50;
+        const delay = Math.random() * 20;
+        
+        setTimeout(() => {
+          particles.push({
+            x: centerX,
+            y: centerY,
+            targetX: centerX + Math.cos(angle) * distance,
+            targetY: centerY + Math.sin(angle) * distance,
+            radius: Math.random() * 2 + 2,
+            vx: 0,
+            vy: 0,
+            color: secondaryColor,
+            alpha: 0.9,
+            life: 1,
+            maxLife: 1,
+            skillParticle: true,
+            wave: true
+          });
+        }, delay * 50);
+      }
+    });
+  });
+  
+  // Animation functions
+  function drawParticleConnections() {
+    // Draw connections between nearby particles
+    ctx.lineWidth = 0.5;
+    
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const p1 = particles[i];
+        const p2 = particles[j];
+        
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < connectionDistance) {
+          const opacity = (1 - distance / connectionDistance) * 0.5 * p1.alpha * p2.alpha;
+          
+          // Use gradient line for connections
+          const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+          gradient.addColorStop(0, `rgba(108, 99, 255, ${opacity})`);
+          gradient.addColorStop(1, `rgba(129, 200, 248, ${opacity})`);
+          
+          ctx.strokeStyle = gradient;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+  
+  function drawMouseConnections() {
+    // Draw connections from mouse to nearby particles
+    if (mouseX > 0 && mouseY > 0) {
+      const mouseRadius = isClicked ? 150 : 100;
+      
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        const dx = p.x - mouseX;
+        const dy = p.y - mouseY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < mouseRadius) {
+          const opacity = (1 - distance / mouseRadius) * p.alpha;
+          
+          ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(mouseX, mouseY);
+          ctx.lineTo(p.x, p.y);
+          ctx.stroke();
+          
+          // Create attraction to mouse
+          if (isClicked) {
+            p.vx += dx * 0.02;
+            p.vy += dy * 0.02;
+          } else {
+            p.vx -= dx * 0.001;
+            p.vy -= dy * 0.001;
+          }
+        }
+      }
+      
+      // Draw mouse indicator
       ctx.beginPath();
+      const gradient = ctx.createRadialGradient(
+        mouseX, mouseY, 0,
+        mouseX, mouseY, isClicked ? 30 : 20
+      );
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
       ctx.fillStyle = gradient;
-      ctx.arc(skill.x, skill.y, skill.radius, 0, 2 * Math.PI);
+      ctx.arc(mouseX, mouseY, isClicked ? 30 : 20, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  
+  function createFlowField() {
+    // Calculate time for continuous flow changes
+    const time = Date.now() * 0.001;
+    const flowScale = 0.005;
+    
+    // Update flow field at regular intervals
+    const flowField = [];
+    const gridSize = 20;
+    const cols = Math.ceil(canvas.width / gridSize);
+    const rows = Math.ceil(canvas.height / gridSize);
+    
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        // Using simplex noise formula (simplified)
+        const angle = Math.sin(x * flowScale + time) * Math.cos(y * flowScale + time) * Math.PI * 2;
+        flowField.push(angle);
+      }
+    }
+    
+    return { flowField, cols, rows, gridSize };
+  }
+  
+  function applyFlowFieldForces(flow) {
+    const { flowField, cols, gridSize } = flow;
+    
+    // Apply flow field forces to particles
+    particles.forEach(p => {
+      // Find the flow grid cell
+      const x = Math.floor(p.x / gridSize);
+      const y = Math.floor(p.y / gridSize);
+      
+      if (x >= 0 && x < cols && y >= 0 && y < Math.ceil(canvas.height / gridSize)) {
+        const index = y * cols + x;
+        const angle = flowField[index];
+        
+        // Apply force based on flow angle
+        const force = p.wave ? 0.05 : 0.01;
+        p.vx += Math.cos(angle) * force;
+        p.vy += Math.sin(angle) * force;
+      }
+    });
+  }
+  
+  function drawParticles() {
+    particles.forEach(p => {
+      ctx.beginPath();
+      
+      // Use color based on particle type
+      if (p.skillParticle && activeSkill) {
+        ctx.fillStyle = `rgba(129, 200, 248, ${p.alpha})`;
+      } else {
+        const color = p.color || primaryColor;
+        ctx.fillStyle = `rgba(${hexToRgb(color)}, ${p.alpha})`;
+      }
+      
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       ctx.fill();
       
-      // Draw text
-      ctx.font = `${Math.max(12, skill.radius * 0.3)}px Poppins, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = skill.highlighted || skill.hovering ? '#ffffff' : '#333333';
-      if (document.body.classList.contains('dark-mode')) {
-        ctx.fillStyle = skill.highlighted || skill.hovering ? '#ffffff' : '#f0f0f0';
+      // Add glow effect for larger particles
+      if (p.radius > 2) {
+        ctx.beginPath();
+        const gradient = ctx.createRadialGradient(
+          p.x, p.y, 0,
+          p.x, p.y, p.radius * 3
+        );
+        gradient.addColorStop(0, `rgba(${hexToRgb(p.color || primaryColor)}, 0.3)`);
+        gradient.addColorStop(1, `rgba(${hexToRgb(p.color || primaryColor)}, 0)`);
+        ctx.fillStyle = gradient;
+        ctx.arc(p.x, p.y, p.radius * 3, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.fillText(skill.name, skill.x, skill.y - 10);
-      ctx.fillText(`${skill.value}%`, skill.x, skill.y + 10);
     });
+  }
+  
+  function updateParticles() {
+    // Create flow field
+    const flow = createFlowField();
     
-    // Animate connections to mouse when hovering
-    if (skills.some(s => s.hovering)) {
-      const hoveringSkill = skills.find(s => s.hovering);
+    // Apply flow forces
+    applyFlowFieldForces(flow);
+    
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
       
-      ctx.beginPath();
-      ctx.strokeStyle = hoveringSkill.accentColor + '66';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
-      ctx.moveTo(mouseX, mouseY);
-      ctx.lineTo(hoveringSkill.x, hoveringSkill.y);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      // Update position
+      p.x += p.vx;
+      p.vy += 0.01; // Slight downward drift
+      p.y += p.vy;
+      
+      // Apply damping
+      p.vx *= 0.99;
+      p.vy *= 0.99;
+      
+      // Handle wave particles
+      if (p.wave && p.targetX) {
+        p.x += (p.targetX - p.x) * 0.03;
+        p.y += (p.targetY - p.y) * 0.03;
+      }
+      
+      // Handle boundaries
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+      
+      // Handle life for temporary particles
+      if (p.life !== undefined) {
+        p.life -= 0.01;
+        p.alpha = p.life;
+        
+        if (p.life <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+    }
+  }
+  
+  function animate() {
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Update and draw particles
+    updateParticles();
+    drawParticleConnections();
+    drawParticles();
+    drawMouseConnections();
+    
+    // Continue animation
+    requestAnimationFrame(animate);
+  }
+  
+  // Helper function to convert HEX to RGB
+  function hexToRgb(hex) {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Convert shorthand (3 digits) to full form (6 digits)
+    if (hex.length === 3) {
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
     
-    requestAnimationFrame(drawSkills);
+    // Parse the hex values
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    return `${r}, ${g}, ${b}`;
   }
   
-  function animateSkills() {
-    positionSkills();
-    drawSkills();
+  // Initialize
+  function init() {
+    createParticles();
+    animate();
   }
   
-  // Initialize skills animation
+  // Start animation when skills section becomes visible
   const skillsSection = document.querySelector('.skills');
   
   if (skillsSection) {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          animateSkills();
+          init();
           observer.unobserve(entry.target);
         }
       });
     }, { threshold: 0.3 });
     
     observer.observe(skillsSection);
+  } else {
+    // Fallback if no observer support
+    init();
   }
 }
 

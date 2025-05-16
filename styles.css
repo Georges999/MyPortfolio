@@ -544,7 +544,19 @@ nav {
 }
 
 .download-btn {
-  margin-top: 4rem;
+  margin-top: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.download-btn i {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.download-btn:hover i {
+  transform: translateY(2px);
 }
 
 @media (max-width: 992px) {
@@ -1449,4 +1461,82 @@ footer {
   z-index: 2;
   mix-blend-mode: overlay;
   transition: opacity 0.3s ease;
+}
+
+.skill-flow-container {
+  width: 100%;
+  height: 250px;
+  position: relative;
+  margin-bottom: 25px;
+  overflow: hidden;
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.dark-mode .skill-flow-container {
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 100%);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+#skill-flow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#skill-flow canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.skill-tag {
+  padding: 8px 15px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.2);
+}
+
+.dark-mode .skill-tag {
+  box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+}
+
+.skill-tag::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: all 0.6s ease;
+  z-index: -1;
+}
+
+.skill-tag:hover, .skill-tag.active {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(108, 99, 255, 0.4);
+}
+
+.skill-tag:hover::before, .skill-tag.active::before {
+  left: 100%;
 } 
