@@ -652,6 +652,49 @@ nav {
     max-width: 400px;
     margin: 0 auto;
   }
+  
+  .image-container {
+    margin-top: 0;
+  }
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 768px) {
+  .image-container {
+    width: 280px;
+    height: 280px;
+    margin-top: 0;
+    margin-bottom: 25px;
+  }
+  
+  .hero {
+    padding-bottom: 6rem; /* Add extra space at hero bottom on mobile */
+  }
+  
+  .hero-buttons {
+    margin-bottom: 4rem; /* More space below buttons on mobile */
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-content {
+    justify-content: flex-start;
+    padding-top: 4rem;
+  }
+  
+  .spacer {
+    min-height: 25vh; /* Extra space in hero section on small phones */
+  }
+  
+  .hero-buttons {
+    margin-top: 2rem;
+  }
+  
+  .image-container {
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 30px;
+  }
 }
 
 /* Projects Section */
