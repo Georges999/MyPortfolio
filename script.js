@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initProjectFilter();
   initSkillAnimation();
   initContactForm();
+  initLightbox();
 });
 
 // Mobile Menu Toggle
@@ -243,80 +244,11 @@ function initProjectFilter() {
     filterProjects(initialFilter);
   }
   
-  // Initialize dynamic project cards with 3D tilt effect
+  // Initialize dynamic project cards
   initDynamicProjectCards();
   
   // Initialize project image navigation
   initProjectImageNavigation();
-}
-
-// Dynamic Project Cards with 3D Tilt Effect
-function initDynamicProjectCards() {
-  const projectCards = document.querySelectorAll('.project-card');
-  
-  projectCards.forEach(card => {
-    // Store initial background state
-    const projectImg = card.querySelector('.project-img img');
-    const initialTransform = projectImg.style.transform;
-    
-    // Add tilt effect on mouse move
-    card.addEventListener('mousemove', (e) => {
-      const cardRect = card.getBoundingClientRect();
-      const cardCenterX = cardRect.left + cardRect.width / 2;
-      const cardCenterY = cardRect.top + cardRect.height / 2;
-      
-      // Calculate mouse position relative to card center (from -1 to 1)
-      const relativeX = (e.clientX - cardCenterX) / (cardRect.width / 2);
-      const relativeY = (e.clientY - cardCenterY) / (cardRect.height / 2);
-      
-      // Apply tilt effect with less intensity for better usability
-      const tiltAmount = 5; // Reduced from 10
-      card.style.transform = `perspective(1000px) rotateY(${relativeX * tiltAmount}deg) rotateX(${-relativeY * tiltAmount}deg) scale(1.03)`;
-      
-      // Create parallax effect for the image with subtle movement
-      if (projectImg) {
-        projectImg.style.transform = `translateX(${relativeX * -10}px) translateY(${relativeY * -10}px) scale(1.1)`;
-      }
-      
-      // Dynamic light reflection effect
-      const glare = card.querySelector('.card-glare') || document.createElement('div');
-      if (!card.querySelector('.card-glare')) {
-        glare.classList.add('card-glare');
-        card.appendChild(glare);
-      }
-      
-      // Position the glare based on mouse movement
-      glare.style.background = `radial-gradient(circle at ${e.clientX - cardRect.left}px ${e.clientY - cardRect.top}px, 
-                              rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%)`;
-    });
-    
-    // Reset card on mouse leave
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1)';
-      if (projectImg) {
-        projectImg.style.transform = initialTransform || 'none';
-      }
-      
-      const glare = card.querySelector('.card-glare');
-      if (glare) {
-        glare.style.opacity = '0';
-        setTimeout(() => {
-          if (glare.parentElement === card) {
-            card.removeChild(glare);
-          }
-        }, 300);
-      }
-    });
-    
-    // Add click animation
-    card.addEventListener('mousedown', () => {
-      card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(0.98)';
-    });
-    
-    card.addEventListener('mouseup', () => {
-      card.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1.03)';
-    });
-  });
 }
 
 // Initialize project image navigation
@@ -337,6 +269,11 @@ function initProjectImageNavigation() {
     let currentIndex = 0;
     const totalImages = images.length;
 
+    // Update counter text
+    if (counter) {
+      counter.textContent = `1 / ${totalImages}`;
+    }
+
     // Initialize slide width after images load
     let slideWidth = 0;
     
@@ -350,7 +287,6 @@ function initProjectImageNavigation() {
         }
       });
     })).then(() => {
-      slideWidth = slides.offsetWidth;
       updateNavigation();
     });
 
@@ -408,14 +344,32 @@ function initProjectImageNavigation() {
       });
     }
 
-    // Handle window resize
-    window.addEventListener('resize', () => {
-      slideWidth = slides.offsetWidth;
-      updateSlidePosition();
-    });
-
     // Initialize
     updateNavigation();
+  });
+}
+
+// Initialize dynamic project cards
+function initDynamicProjectCards() {
+  const projectCards = document.querySelectorAll('.project-card');
+  
+  projectCards.forEach(card => {
+    // Simple card effects for better usability
+    const isKeylogger = !card.querySelector('.project-img');
+    
+    if (isKeylogger) {
+      const icon = card.querySelector('.project-icon');
+      if (icon) {
+        // Simple hover effect for icon
+        card.addEventListener('mouseenter', () => {
+          icon.style.transform = 'scale(1.05)';
+        });
+        
+        card.addEventListener('mouseleave', () => {
+          icon.style.transform = 'scale(1)';
+        });
+      }
+    }
   });
 }
 
@@ -1266,4 +1220,130 @@ function createAssetsFolders() {
 }
 
 // Call this function to remind about folder creation
-createAssetsFolders(); 
+createAssetsFolders();
+
+// Initialize lightbox for project images
+function initLightbox() {
+  const projectImages = document.querySelectorAll('.project-img');
+  const lightbox = document.querySelector('.lightbox');
+  const lightboxImg = document.querySelector('.lightbox-img');
+  const lightboxClose = document.querySelector('.lightbox-close');
+  const lightboxPrev = document.querySelector('.lightbox-prev');
+  const lightboxNext = document.querySelector('.lightbox-next');
+  const lightboxCounter = document.querySelector('.lightbox-counter');
+  
+  let currentProject = null;
+  let currentImageIndex = 0;
+  let images = [];
+  
+  // Open lightbox when clicking on project image
+  projectImages.forEach(projectImg => {
+    projectImg.addEventListener('click', (e) => {
+      e.preventDefault();
+      
+      // Get the project card
+      currentProject = projectImg.closest('.project-card');
+      
+      // Get all images in this project
+      images = Array.from(currentProject.querySelectorAll('.project-img-slides img'));
+      
+      // Get current visible image index
+      const projectSlides = currentProject.querySelector('.project-img-slides');
+      if (projectSlides) {
+        const transform = projectSlides.style.transform || '';
+        const match = transform.match(/translateX\(-(\d+)%\)/);
+        currentImageIndex = match ? parseInt(match[1]) / 100 : 0;
+      } else {
+        currentImageIndex = 0;
+      }
+      
+      // Show lightbox with current image
+      showLightboxImage();
+      lightbox.classList.add('active');
+      
+      // Prevent scrolling when lightbox is open
+      document.body.style.overflow = 'hidden';
+    });
+  });
+  
+  // Close lightbox when clicking close button
+  if (lightboxClose) {
+    lightboxClose.addEventListener('click', () => {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+  }
+  
+  // Close lightbox when clicking outside the image
+  if (lightbox) {
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+  
+  // Navigate to previous image
+  if (lightboxPrev) {
+    lightboxPrev.addEventListener('click', () => {
+      if (currentImageIndex > 0) {
+        currentImageIndex--;
+        showLightboxImage();
+      }
+    });
+  }
+  
+  // Navigate to next image
+  if (lightboxNext) {
+    lightboxNext.addEventListener('click', () => {
+      if (currentImageIndex < images.length - 1) {
+        currentImageIndex++;
+        showLightboxImage();
+      }
+    });
+  }
+  
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('active')) return;
+    
+    if (e.key === 'Escape') {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    } else if (e.key === 'ArrowLeft') {
+      if (currentImageIndex > 0) {
+        currentImageIndex--;
+        showLightboxImage();
+      }
+    } else if (e.key === 'ArrowRight') {
+      if (currentImageIndex < images.length - 1) {
+        currentImageIndex++;
+        showLightboxImage();
+      }
+    }
+  });
+  
+  // Function to show the current image in lightbox
+  function showLightboxImage() {
+    if (images.length === 0) return;
+    
+    const img = images[currentImageIndex];
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt;
+    
+    // Update counter
+    if (lightboxCounter) {
+      lightboxCounter.textContent = `${currentImageIndex + 1} / ${images.length}`;
+    }
+    
+    // Update navigation buttons
+    if (lightboxPrev) {
+      lightboxPrev.style.visibility = currentImageIndex === 0 ? 'hidden' : 'visible';
+    }
+    
+    if (lightboxNext) {
+      lightboxNext.style.visibility = currentImageIndex === images.length - 1 ? 'hidden' : 'visible';
+    }
+  }
+} 
