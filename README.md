@@ -15,4 +15,4 @@ A modern, interactive, and responsive portfolio website template designed to sho
 - **Modern UI** - Clean, modern design with smooth animations
 - **Interactive Particle System** - Eye-catching WebGL-powered flowing particles
 
-##Fun fact:With the wonders of AI, I was able to build and deploy this website from scratch in just 8 hours!
+**:With the wonders of AI, I was able to build and deploy this website from scratch in just 8 hours!**
