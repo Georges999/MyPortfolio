@@ -16,3 +16,4 @@ A modern, interactive, and responsive portfolio website template designed to sho
 - **Interactive Particle System** - Eye-catching WebGL-powered flowing particles
 
 **Fun Fact: With the wonders of AI, I was able to build and deploy this website from scratch in just 8 hours!**
+## georges-ghazal.org
