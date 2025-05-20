@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initSkillAnimation();
   initContactForm();
   initLightbox();
+  initResumeDownload();
 });
 
 // Mobile Menu Toggle
@@ -1345,5 +1346,18 @@ function initLightbox() {
     if (lightboxNext) {
       lightboxNext.style.visibility = currentImageIndex === images.length - 1 ? 'hidden' : 'visible';
     }
+  }
+}
+
+// Add this function at the end of the file
+function initResumeDownload() {
+  // Simple download - just let the browser handle it
+  const resumeLink = document.querySelector('.download-btn');
+  
+  if (resumeLink) {
+    resumeLink.addEventListener('click', function(e) {
+      // Let the browser handle the download natively
+      // No need for custom handling
+    });
   }
 } 

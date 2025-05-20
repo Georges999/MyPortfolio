@@ -5,7 +5,8 @@ class ParticleSystem {
     this.camera = null;
     this.renderer = null;
     this.particles = null;
-    this.particleCount = 2000;
+    this.isMobile = window.innerWidth < 768; // Check if mobile device
+    this.particleCount = 2000; // Keep the same particle count
     this.positions = [];
     this.colors = [];
     this.sizes = [];
@@ -27,7 +28,8 @@ class ParticleSystem {
     this.targetPositions = null;
     this.startPositions = null;
     this.velocities = [];
-    this.yOffset = 6; // Positive offset to position shapes higher
+    // Adjust Y offset based on device - lower on mobile
+    this.yOffset = this.isMobile ? 2 : 6; // Reduced from 6 to 2 on mobile
     this.scale = 1.1; // Increased scale factor to make shapes even larger
     
     // Mouse rotation control

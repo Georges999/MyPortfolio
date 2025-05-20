@@ -1746,6 +1746,38 @@ footer {
 
 @media (max-width: 576px) {
   #particles-canvas {
-    margin-top: 50px; /* Adjust this value as needed to ensure particles are lower on the screen */
+    margin-top: 80px; /* Increased top margin to position particles lower */
+    height: 60vh; /* Control height on mobile */
+    width: 100%;
+    position: relative;
+    cursor: grab; /* Show grabbing cursor to indicate interactivity */
+    touch-action: none; /* Disable default touch behavior */
+  }
+  
+  #particles-canvas:before {
+    content: 'Hold and move to rotate';
+    position: absolute;
+    bottom: 100px; /* Position higher up in the particle area */
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.8); /* More opaque background */
+    color: #333;
+    padding: 12px 24px; /* Larger touch target */
+    border-radius: 30px;
+    font-size: 16px; /* Larger text */
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    pointer-events: none;
+    text-align: center;
+    white-space: nowrap;
+    opacity: 1;
+    border: 1px solid rgba(108, 99, 255, 0.4); /* Border for better visibility */
+  }
+  
+  .dark-mode #particles-canvas:before {
+    background: rgba(50, 50, 50, 0.9);
+    color: #fff;
+    border-color: rgba(108, 99, 255, 0.6);
   }
 } 
