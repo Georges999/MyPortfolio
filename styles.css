@@ -657,15 +657,20 @@ nav {
 @media (max-width: 576px) {
   .hero-content {
     justify-content: flex-start;
-    padding-top: 4rem;
+    padding-top: 3rem; /* Reduced padding to bring content up */
+  }
+  
+  .hero-description {
+    margin-bottom: 1.5rem; /* Reduced margin to tighten layout */
   }
   
   .spacer {
-    min-height: 25vh; /* Extra space in hero section on small phones */
+    min-height: 20vh; /* Reduced space to fit particles properly */
   }
   
   .hero-buttons {
-    margin-top: 2rem;
+    margin-top: 1rem; /* Reduced margin for tighter layout */
+    margin-bottom: 1.5rem; /* Also reduced bottom margin */
   }
   
   .image-container {
@@ -1746,8 +1751,8 @@ footer {
 
 @media (max-width: 576px) {
   #particles-canvas {
-    margin-top: 60px; /* Reduced top margin to position particles higher */
-    height: 65vh; /* Increased height for better visibility */
+    margin-top: 40px; /* Further reduced top margin to position particles even higher */
+    height: 70vh; /* Increased height for better visibility */
     width: 100%;
     position: relative;
     cursor: grab; /* Show grabbing cursor to indicate interactivity */
@@ -1758,9 +1763,29 @@ footer {
     /* Maintain dark mode styles without the instruction text */
   }
   
-  /* Center the particle container better */
+  /* Bring particle controls higher and improve visibility */
   .particles-controls {
-    margin-top: 15px;
+    margin-top: 5px; /* Reduced top margin to bring controls up with particles */
     justify-content: center;
+    padding: 10px 0;
+    gap: 12px; /* Increased gap for better touch targets */
+  }
+  
+  /* Improve profile image fit for mobile */
+  .image-container {
+    width: 220px;
+    height: 220px;
+    margin: 30px auto 25px;
+    border-width: 3px; /* Further reduced border for cleaner look */
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.25); /* Enhanced shadow for better appearance */
+  }
+  
+  .about-content {
+    padding-top: 2rem;
+  }
+  
+  /* Adjust spacer to help with overall layout */
+  .spacer {
+    min-height: 20vh; /* Reduced spacer height to bring everything up */
   }
 } 
