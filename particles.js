@@ -29,7 +29,7 @@ class ParticleSystem {
     this.startPositions = null;
     this.velocities = [];
     // Adjust Y offset based on device - lower on mobile
-    this.yOffset = this.isMobile ? 2 : 6; // Reduced from 6 to 2 on mobile
+    this.yOffset = this.isMobile ? 4 : 6; // Increased from 2 to 4 on mobile for better centering
     this.scale = 1.1; // Increased scale factor to make shapes even larger
     
     // Mouse rotation control
