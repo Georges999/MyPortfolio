@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initTypingEffect();
   initProjectFilter();
   initSkillAnimation();
-  initContactForm();
+  initContactCopy();
   initLightbox();
 });
 
@@ -1163,49 +1163,60 @@ function initAnimations() {
   animateSkills();
 }
 
-// Contact Form Validation and Submit
-function initContactForm() {
-  const contactForm = document.querySelector('.contact-form');
+// Contact Copy to Clipboard
+function initContactCopy() {
+  const contactCards = document.querySelectorAll('.contact-card[data-copy]');
+  const notification = document.querySelector('.copy-notification');
   
-  if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
+  if (!contactCards.length || !notification) return;
+  
+  contactCards.forEach(card => {
+    card.addEventListener('click', async function(e) {
       e.preventDefault();
       
-      // Basic form validation
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const subject = document.getElementById('subject').value;
-      const message = document.getElementById('message').value;
+      const textToCopy = this.getAttribute('data-copy');
       
-      if (!name || !email || !subject || !message) {
-        alert('Please fill in all fields');
-        return;
-      }
-      
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        alert('Please enter a valid email address');
-        return;
-      }
-      
-      // Simulate form submission (replace with actual form submission)
-      const submitBtn = contactForm.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-      
-      setTimeout(() => {
-        contactForm.reset();
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
+      try {
+        // Use modern clipboard API
+        await navigator.clipboard.writeText(textToCopy);
         
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalText;
-        }, 3000);
-      }, 2000);
+        // Show notification
+        showCopyNotification();
+      } catch (err) {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(textToCopy);
+      }
     });
+  });
+  
+  function showCopyNotification() {
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 2500);
+  }
+  
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.top = '-9999px';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showCopyNotification();
+      }
+    } catch (err) {
+      console.error('Fallback: Unable to copy', err);
+    }
+    
+    document.body.removeChild(textArea);
   }
 }
 
