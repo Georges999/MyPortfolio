@@ -27,8 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
   initTypingEffect();
   initProjectFilter();
   initSkillAnimation();
-  initContactForm();
+  initContactCopy();
   initLightbox();
+  initAmbientParticles();
+  initResumePreview();
 });
 
 // Mobile Menu Toggle
@@ -192,58 +194,8 @@ function initTypingEffect() {
   }
 }
 
-// Project Filtering
+// Project Filtering (filter buttons removed, keeping image navigation)
 function initProjectFilter() {
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  const projectCards = document.querySelectorAll('.project-card');
-  
-  // Function to filter projects
-  function filterProjects(filterValue) {
-    console.log("Filtering projects:", filterValue); // Debug
-    
-    projectCards.forEach((card, index) => {
-      const cardCategory = card.getAttribute('data-category');
-      console.log("Card category:", cardCategory); // Debug
-      
-      card.style.transform = 'scale(0.8) translateY(50px)';
-      card.style.opacity = '0';
-      
-      setTimeout(() => {
-        if (filterValue === 'all' || cardCategory === filterValue) {
-          card.style.display = 'block';
-          // Add a staggered delay based on the index
-          setTimeout(() => {
-            card.style.transform = 'scale(1) translateY(0)';
-            card.style.opacity = '1';
-          }, 50 * index);
-        } else {
-          card.style.display = 'none';
-        }
-      }, 300);
-    });
-  }
-  
-  // Set up click events for filter buttons
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      // Remove active class from all buttons
-      filterBtns.forEach(btn => btn.classList.remove('active'));
-      
-      // Add active class to clicked button
-      this.classList.add('active');
-      
-      const filterValue = this.getAttribute('data-filter');
-      filterProjects(filterValue);
-    });
-  });
-  
-  // Initialize with "all" filter active
-  const activeFilterBtn = document.querySelector('.filter-btn.active');
-  if (activeFilterBtn) {
-    const initialFilter = activeFilterBtn.getAttribute('data-filter');
-    filterProjects(initialFilter);
-  }
-  
   // Initialize dynamic project cards
   initDynamicProjectCards();
   
@@ -1163,50 +1115,31 @@ function initAnimations() {
   animateSkills();
 }
 
-// Contact Form Validation and Submit
-function initContactForm() {
-  const contactForm = document.querySelector('.contact-form');
+// Contact Copy Functionality
+function initContactCopy() {
+  const copyCards = document.querySelectorAll('.contact-card[data-copy]');
+  const notification = document.querySelector('.copy-notification');
   
-  if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
-      e.preventDefault();
+  copyCards.forEach(card => {
+    card.addEventListener('click', async () => {
+      const textToCopy = card.getAttribute('data-copy');
       
-      // Basic form validation
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const subject = document.getElementById('subject').value;
-      const message = document.getElementById('message').value;
-      
-      if (!name || !email || !subject || !message) {
-        alert('Please fill in all fields');
-        return;
-      }
-      
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        alert('Please enter a valid email address');
-        return;
-      }
-      
-      // Simulate form submission (replace with actual form submission)
-      const submitBtn = contactForm.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-      
-      setTimeout(() => {
-        contactForm.reset();
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
+      try {
+        await navigator.clipboard.writeText(textToCopy);
         
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalText;
-        }, 3000);
-      }, 2000);
+        // Show notification
+        if (notification) {
+          notification.classList.add('show');
+          
+          setTimeout(() => {
+            notification.classList.remove('show');
+          }, 2000);
+        }
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
     });
-  }
+  });
 }
 
 // Create folder if it doesn't exist
@@ -1346,4 +1279,521 @@ function initLightbox() {
       lightboxNext.style.visibility = currentImageIndex === images.length - 1 ? 'hidden' : 'visible';
     }
   }
+}
+
+// Initialize Ambient Particles
+function initAmbientParticles() {
+  initAboutParticles();
+  initExperienceParticles();
+  initProjectsParticles();
+  initContactParticles();
+}
+
+// 2D Particles for About Section
+function initAboutParticles() {
+  const canvas = document.getElementById('about-particles');
+  if (!canvas) return;
+  
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let animationFrameId;
+  let isVisible = false;
+  
+  // Set canvas size
+  function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  
+  // Particle class
+  class Particle2D {
+    constructor() {
+      this.reset();
+      this.y = Math.random() * canvas.height;
+    }
+    
+    reset() {
+      this.x = Math.random() * canvas.width;
+      this.y = -10;
+      this.vx = (Math.random() - 0.5) * 0.5;
+      this.vy = Math.random() * 0.5 + 0.2;
+      this.radius = Math.random() * 2 + 1;
+      this.opacity = Math.random() * 0.5 + 0.3;
+    }
+    
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+      
+      // Vertical ellipse boundary (invisible)
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radiusX = canvas.width * 0.4;
+      const radiusY = canvas.height * 0.48;
+      
+      // Calculate distance from center (ellipse equation)
+      const normalizedX = (this.x - centerX) / radiusX;
+      const normalizedY = (this.y - centerY) / radiusY;
+      const distanceFromCenter = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+      
+      // Elastic bounce when hitting boundary
+      if (distanceFromCenter > 0.95) {
+        const angle = Math.atan2(this.y - centerY, this.x - centerX);
+        const pushX = Math.cos(angle) * 0.5;
+        const pushY = Math.sin(angle) * 0.5;
+        this.vx -= pushX;
+        this.vy -= pushY;
+      }
+      
+      // Reset if particle goes way out of bounds
+      if (this.y > canvas.height + 50 || this.x < -50 || this.x > canvas.width + 50) {
+        this.reset();
+      }
+    }
+    
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(108, 99, 255, ${this.opacity})`;
+      ctx.fill();
+    }
+  }
+  
+  // Initialize particles
+  for (let i = 0; i < 60; i++) {
+    particles.push(new Particle2D());
+  }
+  
+  // Spatial hash grid for optimized connection detection
+  const gridSize = 100;
+  function getGridKey(x, y) {
+    return `${Math.floor(x / gridSize)},${Math.floor(y / gridSize)}`;
+  }
+  
+  function buildSpatialGrid() {
+    const grid = {};
+    particles.forEach(p => {
+      const key = getGridKey(p.x, p.y);
+      if (!grid[key]) grid[key] = [];
+      grid[key].push(p);
+    });
+    return grid;
+  }
+  
+  // Draw connections between nearby particles (optimized)
+  let frameCount = 0;
+  function drawConnections() {
+    frameCount++;
+    if (frameCount % 2 !== 0) return; // Only draw connections every other frame
+    
+    const grid = buildSpatialGrid();
+    const maxDistance = 100;
+    
+    particles.forEach(p1 => {
+      const gridX = Math.floor(p1.x / gridSize);
+      const gridY = Math.floor(p1.y / gridSize);
+      
+      // Check neighboring cells
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const key = `${gridX + dx},${gridY + dy}`;
+          const neighbors = grid[key] || [];
+          
+          neighbors.forEach(p2 => {
+            if (p1 === p2) return;
+            
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < maxDistance) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              const opacity = (1 - distance / maxDistance) * 0.15;
+              ctx.strokeStyle = `rgba(108, 99, 255, ${opacity})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          });
+        }
+      }
+    });
+  }
+  
+  // Animation loop (throttled to ~30fps)
+  let lastTime = 0;
+  const fps = 30;
+  const interval = 1000 / fps;
+  
+  function animate(currentTime) {
+    if (!isVisible) return;
+    
+    const deltaTime = currentTime - lastTime;
+    
+    if (deltaTime >= interval) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      drawConnections();
+      
+      particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+      });
+      
+      lastTime = currentTime - (deltaTime % interval);
+    }
+    
+    animationFrameId = requestAnimationFrame(animate);
+  }
+  
+  // Intersection Observer for lazy loading
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        isVisible = true;
+        animate(0);
+      } else {
+        isVisible = false;
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  observer.observe(canvas);
+}
+
+// 3D Particles for Experience Section
+function initExperienceParticles() {
+  const container = document.getElementById('experience-ambient-particles');
+  if (!container || typeof THREE === 'undefined') return;
+  
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  
+  renderer.setSize(container.offsetWidth, container.offsetHeight);
+  renderer.setClearColor(0x000000, 0);
+  container.appendChild(renderer.domElement);
+  
+  camera.position.z = 50;
+  
+  // Create geometric shapes instead of points
+  const shapes = [];
+  const geometries = [
+    new THREE.OctahedronGeometry(1),
+    new THREE.TetrahedronGeometry(1),
+    new THREE.IcosahedronGeometry(1, 0),
+    new THREE.TorusGeometry(0.8, 0.3, 8, 16),
+    new THREE.BoxGeometry(1.2, 1.2, 1.2)
+  ];
+  
+  const shapeCount = 25;
+  
+  for (let i = 0; i < shapeCount; i++) {
+    const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+    const material = new THREE.MeshBasicMaterial({
+      color: Math.random() > 0.5 ? 0x6c63ff : 0xf50057,
+      wireframe: Math.random() > 0.3,
+      transparent: true,
+      opacity: Math.random() * 0.4 + 0.3
+    });
+    
+    const mesh = new THREE.Mesh(geometry, material);
+    
+    mesh.position.x = (Math.random() - 0.5) * 100;
+    mesh.position.y = (Math.random() - 0.5) * 60;
+    mesh.position.z = (Math.random() - 0.5) * 60;
+    
+    mesh.userData = {
+      rotationSpeed: {
+        x: (Math.random() - 0.5) * 0.02,
+        y: (Math.random() - 0.5) * 0.02,
+        z: (Math.random() - 0.5) * 0.02
+      },
+      floatSpeed: Math.random() * 0.02 + 0.01,
+      floatOffset: Math.random() * Math.PI * 2
+    };
+    
+    shapes.push(mesh);
+    scene.add(mesh);
+  }
+  
+  let isVisible = false;
+  let time = 0;
+  
+  function animate() {
+    if (!isVisible) return;
+    
+    time += 0.01;
+    
+    shapes.forEach((shape, i) => {
+      shape.rotation.x += shape.userData.rotationSpeed.x;
+      shape.rotation.y += shape.userData.rotationSpeed.y;
+      shape.rotation.z += shape.userData.rotationSpeed.z;
+      
+      shape.position.y += Math.sin(time + shape.userData.floatOffset) * shape.userData.floatSpeed;
+    });
+    
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  }
+  
+  // Intersection Observer
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        isVisible = true;
+        animate();
+      } else {
+        isVisible = false;
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  observer.observe(container);
+  
+  // Handle resize
+  window.addEventListener('resize', () => {
+    camera.aspect = container.offsetWidth / container.offsetHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.offsetWidth, container.offsetHeight);
+  });
+}
+
+// 3D Particles for Projects Section (same as Experience)
+function initProjectsParticles() {
+  const container = document.getElementById('projects-ambient-particles');
+  if (!container || typeof THREE === 'undefined') return;
+  
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  
+  renderer.setSize(container.offsetWidth, container.offsetHeight);
+  renderer.setClearColor(0x000000, 0);
+  container.appendChild(renderer.domElement);
+  
+  camera.position.z = 50;
+  
+  const shapes = [];
+  const geometries = [
+    new THREE.OctahedronGeometry(1),
+    new THREE.TetrahedronGeometry(1),
+    new THREE.IcosahedronGeometry(1, 0),
+    new THREE.TorusGeometry(0.8, 0.3, 8, 16),
+    new THREE.BoxGeometry(1.2, 1.2, 1.2)
+  ];
+  
+  const shapeCount = 25;
+  
+  for (let i = 0; i < shapeCount; i++) {
+    const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+    const material = new THREE.MeshBasicMaterial({
+      color: Math.random() > 0.5 ? 0x6c63ff : 0xf50057,
+      wireframe: Math.random() > 0.3,
+      transparent: true,
+      opacity: Math.random() * 0.4 + 0.3
+    });
+    
+    const mesh = new THREE.Mesh(geometry, material);
+    
+    mesh.position.x = (Math.random() - 0.5) * 100;
+    mesh.position.y = (Math.random() - 0.5) * 60;
+    mesh.position.z = (Math.random() - 0.5) * 60;
+    
+    mesh.userData = {
+      rotationSpeed: {
+        x: (Math.random() - 0.5) * 0.02,
+        y: (Math.random() - 0.5) * 0.02,
+        z: (Math.random() - 0.5) * 0.02
+      },
+      floatSpeed: Math.random() * 0.02 + 0.01,
+      floatOffset: Math.random() * Math.PI * 2
+    };
+    
+    shapes.push(mesh);
+    scene.add(mesh);
+  }
+  
+  let isVisible = false;
+  let time = 0;
+  
+  function animate() {
+    if (!isVisible) return;
+    
+    time += 0.01;
+    
+    shapes.forEach((shape, i) => {
+      shape.rotation.x += shape.userData.rotationSpeed.x;
+      shape.rotation.y += shape.userData.rotationSpeed.y;
+      shape.rotation.z += shape.userData.rotationSpeed.z;
+      
+      shape.position.y += Math.sin(time + shape.userData.floatOffset) * shape.userData.floatSpeed;
+    });
+    
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  }
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        isVisible = true;
+        animate();
+      } else {
+        isVisible = false;
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  observer.observe(container);
+  
+  window.addEventListener('resize', () => {
+    camera.aspect = container.offsetWidth / container.offsetHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.offsetWidth, container.offsetHeight);
+  });
+}
+
+// 3D Particles for Contact Section (same as Experience and Projects)
+function initContactParticles() {
+  const container = document.getElementById('contact-ambient-particles');
+  if (!container || typeof THREE === 'undefined') return;
+  
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  
+  renderer.setSize(container.offsetWidth, container.offsetHeight);
+  renderer.setClearColor(0x000000, 0);
+  container.appendChild(renderer.domElement);
+  
+  camera.position.z = 50;
+  
+  const shapes = [];
+  const geometries = [
+    new THREE.OctahedronGeometry(1),
+    new THREE.TetrahedronGeometry(1),
+    new THREE.IcosahedronGeometry(1, 0),
+    new THREE.TorusGeometry(0.8, 0.3, 8, 16),
+    new THREE.BoxGeometry(1.2, 1.2, 1.2)
+  ];
+  
+  const shapeCount = 25;
+  
+  for (let i = 0; i < shapeCount; i++) {
+    const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+    const material = new THREE.MeshBasicMaterial({
+      color: Math.random() > 0.5 ? 0x6c63ff : 0xf50057,
+      wireframe: Math.random() > 0.3,
+      transparent: true,
+      opacity: Math.random() * 0.4 + 0.3
+    });
+    
+    const mesh = new THREE.Mesh(geometry, material);
+    
+    mesh.position.x = (Math.random() - 0.5) * 100;
+    mesh.position.y = (Math.random() - 0.5) * 60;
+    mesh.position.z = (Math.random() - 0.5) * 60;
+    
+    mesh.userData = {
+      rotationSpeed: {
+        x: (Math.random() - 0.5) * 0.02,
+        y: (Math.random() - 0.5) * 0.02,
+        z: (Math.random() - 0.5) * 0.02
+      },
+      floatSpeed: Math.random() * 0.02 + 0.01,
+      floatOffset: Math.random() * Math.PI * 2
+    };
+    
+    shapes.push(mesh);
+    scene.add(mesh);
+  }
+  
+  let isVisible = false;
+  let time = 0;
+  
+  function animate() {
+    if (!isVisible) return;
+    
+    time += 0.01;
+    
+    shapes.forEach((shape, i) => {
+      shape.rotation.x += shape.userData.rotationSpeed.x;
+      shape.rotation.y += shape.userData.rotationSpeed.y;
+      shape.rotation.z += shape.userData.rotationSpeed.z;
+      
+      shape.position.y += Math.sin(time + shape.userData.floatOffset) * shape.userData.floatSpeed;
+    });
+    
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  }
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        isVisible = true;
+        animate();
+      } else {
+        isVisible = false;
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  observer.observe(container);
+  
+  window.addEventListener('resize', () => {
+    camera.aspect = container.offsetWidth / container.offsetHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.offsetWidth, container.offsetHeight);
+  });
+}
+
+// Resume Preview Modal
+function initResumePreview() {
+  const previewBtn = document.getElementById('previewResumeBtn');
+  const modal = document.getElementById('resumeModal');
+  const closeBtn = document.getElementById('closeResumeModal');
+  const iframe = document.getElementById('resumeIframe');
+
+  if (!previewBtn || !modal || !closeBtn || !iframe) return;
+
+  // Open modal
+  previewBtn.addEventListener('click', () => {
+    iframe.src = 'assets/Georges_Ghazal_CV28.pdf';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  });
+
+  // Close modal
+  function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    // Clear iframe src to stop loading
+    setTimeout(() => {
+      iframe.src = '';
+    }, 300);
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+
+  // Close on background click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      closeModal();
+    }
+  });
 } 
