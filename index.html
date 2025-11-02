@@ -76,6 +76,8 @@
           <div class="image-container">
             <img src="assets/profile.jpg" alt="Profile Picture">
           </div>
+          <!-- Ambient particles in elastic bound below profile -->
+          <canvas id="about-particles" class="ambient-particles-canvas"></canvas>
         </div>
         <div class="about-text">
           <p>Hello! My name is Georges Ghazal and I'm a passionate 3rd year Software Engineering COOP student at Concordia University in Montreal, Canada. Originally from Lebanon, I completed my Lebanese Baccalaureate in Life Sciences at Antonine Sisters School in Ghazir.</p>
@@ -153,14 +155,45 @@
         <h2>My Projects</h2>
         <div class="underline"></div>
       </div>
-      <div class="filter-buttons">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="web">Web</button>
-        <button class="filter-btn" data-filter="cyber">Cybersecurity</button>
-        <button class="filter-btn" data-filter="game">Game Development</button>
-      </div>
-      <div class="projects-grid">
-        <div class="project-card featured" data-category="web">
+      <!-- Ambient particles in projects section -->
+      <div id="projects-ambient-particles" class="projects-particles-container"></div>
+      <div class="projects-masonry">
+        <!-- Featured Large Project - Cybersecurity Toolkit -->
+        <div class="project-card masonry-large">
+          <div class="project-img">
+            <div class="project-img-slides">
+              <img src="assets/project2.jpg" alt="Cybersecurity Toolkit - Screenshot 1">
+              <img src="assets/project21.jpg" alt="Cybersecurity Toolkit - Screenshot 2">
+              <img src="assets/project22.jpg" alt="Cybersecurity Toolkit - Screenshot 3">
+              <img src="assets/project23.jpg" alt="Cybersecurity Toolkit - Screenshot 4">
+              <img src="assets/project24.jpg" alt="Cybersecurity Toolkit - Screenshot 5">
+              <img src="assets/project25.jpg" alt="Cybersecurity Toolkit - Screenshot 6">
+              <img src="assets/project26.jpg" alt="Cybersecurity Toolkit - Screenshot 7">
+            </div>
+            <div class="project-img-nav">
+              <button class="img-nav-btn prev-img"><i class="fas fa-chevron-left"></i></button>
+              <button class="img-nav-btn next-img"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="img-nav-counter">1 / 7</div>
+          </div>
+          <div class="project-content">
+            <div class="project-badge">Featured</div>
+            <h3>Cybersecurity Toolkit</h3>
+            <p>A comprehensive cybersecurity application with file encryption/decryption, network monitoring, and threat detection capabilities. Includes network security tools including TCP honeypot, packet capture analysis, and Wi-Fi access point monitoring for threat intelligence.</p>
+            <div class="project-tech">
+              <span>C#</span>
+              <span>.NET</span>
+              <span>NuGet Packages</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="project-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i></a>
+              <a href="https://github.com/Georges999/Cybersecurity-Toolkit" class="project-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Smart Event System -->
+        <div class="project-card masonry-medium">
           <div class="project-img">
             <div class="project-img-slides">
               <img src="assets/project1.jpg" alt="Smart Event System - Screenshot 1">
@@ -195,7 +228,8 @@
           </div>
         </div>
         
-        <div class="project-card" data-category="cyber">
+        <!-- Advanced Keylogger -->
+        <div class="project-card masonry-small">
           <div class="project-content">
             <div class="project-icon"><i class="fas fa-keyboard"></i></div>
             <h3>Advanced Keylogger</h3>
@@ -213,39 +247,8 @@
           </div>
         </div>
         
-        <div class="project-card featured" data-category="cyber">
-          <div class="project-img">
-            <div class="project-img-slides">
-              <img src="assets/project2.jpg" alt="Cybersecurity Toolkit - Screenshot 1">
-              <img src="assets/project21.jpg" alt="Cybersecurity Toolkit - Screenshot 2">
-              <img src="assets/project22.jpg" alt="Cybersecurity Toolkit - Screenshot 3">
-              <img src="assets/project23.jpg" alt="Cybersecurity Toolkit - Screenshot 4">
-              <img src="assets/project24.jpg" alt="Cybersecurity Toolkit - Screenshot 5">
-              <img src="assets/project25.jpg" alt="Cybersecurity Toolkit - Screenshot 6">
-              <img src="assets/project26.jpg" alt="Cybersecurity Toolkit - Screenshot 7">
-            </div>
-            <div class="project-img-nav">
-              <button class="img-nav-btn prev-img"><i class="fas fa-chevron-left"></i></button>
-              <button class="img-nav-btn next-img"><i class="fas fa-chevron-right"></i></button>
-            </div>
-            <div class="img-nav-counter">1 / 7</div>
-          </div>
-          <div class="project-content">
-            <h3>Cybersecurity Toolkit</h3>
-            <p>A comprehensive cybersecurity application with file encryption/decryption, network monitoring, and threat detection capabilities. Includes network security tools including TCP honeypot, packet capture analysis, and Wi-Fi access point monitoring for threat intelligence.</p>
-            <div class="project-tech">
-              <span>C#</span>
-              <span>.NET</span>
-              <span>NuGet Packages</span>
-            </div>
-            <div class="project-links">
-              <a href="#" class="project-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i></a>
-              <a href="https://github.com/Georges999/Cybersecurity-Toolkit" class="project-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
-            </div>
-          </div>
-        </div>
-        
-        <div class="project-card" data-category="game">
+        <!-- 3D Escape Games -->
+        <div class="project-card masonry-medium">
           <div class="project-img">
             <div class="project-img-slides">
               <img src="assets/project3.PNG" alt="3D Escape Games - Screenshot 1">
@@ -298,6 +301,8 @@
         <h2>Experience</h2>
         <div class="underline"></div>
       </div>
+      <!-- Ambient 3D particles in experience section -->
+      <div id="experience-ambient-particles" class="experience-particles-container"></div>
       <div class="timeline">
         <div class="timeline-item">
           <div class="timeline-dot"></div>
@@ -390,6 +395,8 @@
         <h2>Let's Connect</h2>
         <div class="underline"></div>
       </div>
+      <!-- Ambient particles in contact section -->
+      <div id="contact-ambient-particles" class="contact-particles-container"></div>
       <div class="contact-content">
         <div class="contact-cards">
           <div class="contact-card" data-copy="g_ghazal@live.concordia.ca">
