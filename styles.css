@@ -774,23 +774,76 @@ nav {
 }
 
 @media (max-width: 576px) {
+  /* Make hero section more compact */
+  .hero {
+    padding-bottom: 0; /* Remove extra bottom padding to tighten up the layout */
+    min-height: 90vh; /* Control the overall section height */
+  }
+
   .hero-content {
     justify-content: flex-start;
-    padding-top: 4rem;
+    padding-top: 2rem; /* Further reduced padding to bring content up more */
+    height: auto; /* Allow content to fit naturally */
   }
   
-  .spacer {
-    min-height: 25vh; /* Extra space in hero section on small phones */
+  .hero-description {
+    margin-bottom: 1rem; /* Reduced margin to tighten layout */
   }
   
+  /* Increase particles visibility and height */
+  #particles-canvas {
+    margin-top: 30px; /* Even more reduced margin for higher positioning */
+    height: 55vh; /* Reduced height to make room for buttons below */
+    max-height: 380px; /* Add max-height constraint to prevent overflow */
+    width: 100%;
+    position: relative;
+    cursor: grab; /* Show grabbing cursor to indicate interactivity */
+    touch-action: none; /* Disable default touch behavior */
+  }
+  
+  /* Improve spacing of elements below particles */
+  .particles-controls {
+    margin-top: 8px;
+    margin-bottom: 15px; /* Add bottom margin to separate from hero buttons */
+    justify-content: center;
+    padding: 8px 0;
+    gap: 10px; /* Better touch targets */
+  }
+  
+  .particle-btn {
+    font-size: 0.8rem; /* Slightly smaller font size */
+    padding: 0.5rem 1rem; /* Slightly larger padding for better touch */
+  }
+  
+  /* Adjust hero buttons positioning */
   .hero-buttons {
-    margin-top: 2rem;
+    margin-top: 0; /* Remove top margin */
+    margin-bottom: 25px; /* Add space below buttons before About section */
   }
   
+  /* Adjust spacer to help with overall layout */
+  .spacer {
+    min-height: 10px; /* Minimal spacer to tighten layout */
+    flex-grow: 0; /* Don't let it grow */
+  }
+  
+  /* Add space between hero and about sections */
+  #about {
+    padding-top: 2rem; /* Reduced padding at top of About section */
+    margin-top: 1rem; /* Add margin to separate from hero content */
+  }
+  
+  /* Improve profile image fit for mobile */
   .image-container {
     width: 220px;
     height: 220px;
-    margin: 0 auto 30px;
+    margin: 30px auto 25px;
+    border-width: 3px; /* Further reduced border for cleaner look */
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.25); /* Enhanced shadow for better appearance */
+  }
+  
+  .about-content {
+    padding-top: 2rem;
   }
 }
 
@@ -2132,7 +2185,42 @@ footer {
 
 @media (max-width: 576px) {
   #particles-canvas {
-    margin-top: 50px; /* Adjust this value as needed to ensure particles are lower on the screen */
+    margin-top: 40px; /* Further reduced top margin to position particles even higher */
+    height: 70vh; /* Increased height for better visibility */
+    width: 100%;
+    position: relative;
+    cursor: grab; /* Show grabbing cursor to indicate interactivity */
+    touch-action: none; /* Disable default touch behavior */
+  }
+  
+  .dark-mode #particles-canvas {
+    /* Maintain dark mode styles without the instruction text */
+  }
+  
+  /* Bring particle controls higher and improve visibility */
+  .particles-controls {
+    margin-top: 5px; /* Reduced top margin to bring controls up with particles */
+    justify-content: center;
+    padding: 10px 0;
+    gap: 12px; /* Increased gap for better touch targets */
+  }
+  
+  /* Improve profile image fit for mobile */
+  .image-container {
+    width: 220px;
+    height: 220px;
+    margin: 30px auto 25px;
+    border-width: 3px; /* Further reduced border for cleaner look */
+    box-shadow: 0 10px 25px rgba(108, 99, 255, 0.25); /* Enhanced shadow for better appearance */
+  }
+  
+  .about-content {
+    padding-top: 2rem;
+  }
+  
+  /* Adjust spacer to help with overall layout */
+  .spacer {
+    min-height: 20vh; /* Reduced spacer height to bring everything up */
   }
 }
 
