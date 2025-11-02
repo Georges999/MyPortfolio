@@ -10,7 +10,7 @@ A modern, interactive, and responsive portfolio website template designed to sho
 - **Interactive Elements** - Animations, typing effect, skill bars, and more
 - **Project Filtering** - Filter projects by category
 - **Custom Cursor** - Enhanced cursor experience on desktop
-- **Contact Form** - Ready-to-use contact form with validation
+- **Interactive Contact Cards** - Click-to-copy contact information with smooth animations
 - **Timeline Design** - Showcase your experience with a stylish timeline
 - **Modern UI** - Clean, modern design with smooth animations
 - **Interactive Particle System** - Eye-catching WebGL-powered flowing particles

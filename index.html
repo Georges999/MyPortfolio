@@ -76,6 +76,31 @@
           <div class="image-container">
             <img src="assets/profile.jpg" alt="Profile Picture">
           </div>
+          <!-- Ambient particles in elastic bound below profile -->
+          <canvas id="about-particles" class="ambient-particles-canvas"></canvas>
+          
+          <!-- Resume Card -->
+          <div class="resume-card">
+            <div class="resume-card-content">
+              <div class="resume-icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <div>
+                <h3>Resume</h3>
+                <p>View or download my CV</p>
+              </div>
+            </div>
+            <div class="resume-actions">
+              <button class="btn resume-preview-btn" id="previewResumeBtn">
+                <i class="fas fa-eye"></i>
+                <span>Preview</span>
+              </button>
+              <a href="assets/Georges_Ghazal_CV28.pdf" class="btn resume-download-btn" download target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-download"></i>
+                <span>Download</span>
+              </a>
+            </div>
+          </div>
         </div>
         <div class="about-text">
           <p>Hello! My name is Georges Ghazal and I'm a passionate 3rd year Software Engineering COOP student at Concordia University in Montreal, Canada. Originally from Lebanon, I completed my Lebanese Baccalaureate in Life Sciences at Antonine Sisters School in Ghazir.</p>
@@ -151,14 +176,45 @@
         <h2>My Projects</h2>
         <div class="underline"></div>
       </div>
-      <div class="filter-buttons">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="web">Web</button>
-        <button class="filter-btn" data-filter="cyber">Cybersecurity</button>
-        <button class="filter-btn" data-filter="game">Game Development</button>
-      </div>
-      <div class="projects-grid">
-        <div class="project-card featured" data-category="web">
+      <!-- Ambient particles in projects section -->
+      <div id="projects-ambient-particles" class="projects-particles-container"></div>
+      <div class="projects-masonry">
+        <!-- Featured Large Project - Cybersecurity Toolkit -->
+        <div class="project-card masonry-large">
+          <div class="project-img">
+            <div class="project-img-slides">
+              <img src="assets/project2.jpg" alt="Cybersecurity Toolkit - Screenshot 1">
+              <img src="assets/project21.jpg" alt="Cybersecurity Toolkit - Screenshot 2">
+              <img src="assets/project22.jpg" alt="Cybersecurity Toolkit - Screenshot 3">
+              <img src="assets/project23.jpg" alt="Cybersecurity Toolkit - Screenshot 4">
+              <img src="assets/project24.jpg" alt="Cybersecurity Toolkit - Screenshot 5">
+              <img src="assets/project25.jpg" alt="Cybersecurity Toolkit - Screenshot 6">
+              <img src="assets/project26.jpg" alt="Cybersecurity Toolkit - Screenshot 7">
+            </div>
+            <div class="project-img-nav">
+              <button class="img-nav-btn prev-img"><i class="fas fa-chevron-left"></i></button>
+              <button class="img-nav-btn next-img"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="img-nav-counter">1 / 7</div>
+          </div>
+          <div class="project-content">
+            <div class="project-badge">Featured</div>
+            <h3>Cybersecurity Toolkit</h3>
+            <p>A comprehensive cybersecurity application with file encryption/decryption, network monitoring, and threat detection capabilities. Includes network security tools including TCP honeypot, packet capture analysis, and Wi-Fi access point monitoring for threat intelligence.</p>
+            <div class="project-tech">
+              <span>C#</span>
+              <span>.NET</span>
+              <span>NuGet Packages</span>
+            </div>
+            <div class="project-links">
+              <a href="#" class="project-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i></a>
+              <a href="https://github.com/Georges999/Cybersecurity-Toolkit" class="project-link" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Smart Event System -->
+        <div class="project-card masonry-medium">
           <div class="project-img">
             <div class="project-img-slides">
               <img src="assets/project1.jpg" alt="Smart Event System - Screenshot 1">
@@ -193,7 +249,8 @@
           </div>
         </div>
         
-        <div class="project-card" data-category="cyber">
+        <!-- Advanced Keylogger -->
+        <div class="project-card masonry-small">
           <div class="project-content">
             <div class="project-icon"><i class="fas fa-keyboard"></i></div>
             <h3>Advanced Keylogger</h3>
@@ -234,8 +291,7 @@
             <div class="project-tech">
               <span>C#</span>
               <span>.NET</span>
-              <span>WireShark</span>
-              <span>SharpPcap</span>
+              <span>NuGet Packages</span>
             </div>
             <div class="project-links">
               <a href="#" class="project-link" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i></a>
@@ -297,14 +353,39 @@
         <h2>Experience</h2>
         <div class="underline"></div>
       </div>
+      <!-- Ambient 3D particles in experience section -->
+      <div id="experience-ambient-particles" class="experience-particles-container"></div>
       <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-icon">
+              <i class="fas fa-code"></i>
+            </div>
+            <div class="timeline-date">September 2025 - December 2025</div>
+            <h3>Software Engineer</h3>
+            <h4>Ministère de la Cybersécurité et du Numérique du Québec (MCN) - Montreal, Canada</h4>
+            <p>Developed automation scripts for critical cybersecurity measures and infrastructure management. Replaced and secured HCaptcha keys using AWS for enhanced security. Authored Ruby code for government applications. Implemented secure access protocols using WSL with VPN kit. Created comprehensive documentation for WSL and VPN kit setup with certificates, enabling new employees to safely access source code. Assisted in secure data migrations for government entities.</p>
+            <div class="timeline-skills">
+              <span class="timeline-skill">Automation Scripting</span>
+              <span class="timeline-skill">AWS</span>
+              <span class="timeline-skill">Ruby</span>
+              <span class="timeline-skill">WSL</span>
+              <span class="timeline-skill">VPN Configuration</span>
+              <span class="timeline-skill">Security</span>
+              <span class="timeline-skill">Documentation</span>
+              <span class="timeline-skill">Data Migration</span>
+            </div>
+          </div>
+        </div>
+        
         <div class="timeline-item">
           <div class="timeline-dot"></div>
           <div class="timeline-content">
             <div class="timeline-icon">
               <i class="fas fa-shield-alt"></i>
             </div>
-            <div class="timeline-date">2024</div>
+            <div class="timeline-date">June 2024 - September 2024</div>
             <h3>Cyber Analyst Intern</h3>
             <h4>AHEAD FZCO - Dubai, UAE</h4>
             <p>Managed account and credential confidentiality for various events in Dubai and Abu Dhabi. Implemented cybersecurity measures to protect company data and systems. Collaborated with IT teams to ensure smooth operations and security compliance.</p>
@@ -363,32 +444,56 @@
 
     <section id="contact" class="contact">
       <div class="section-header">
-        <h2>Get In Touch</h2>
+        <h2>Let's Connect</h2>
         <div class="underline"></div>
       </div>
+      <!-- Ambient particles in contact section -->
+      <div id="contact-ambient-particles" class="contact-particles-container"></div>
       <div class="contact-content">
-        <div class="contact-info">
-          <div class="contact-item">
-            <i class="fas fa-envelope"></i>
-            <div>
-              <h3>Email</h3>
-              <p>g_ghazal@live.concordia.ca</p>
+        <div class="contact-cards">
+          <div class="contact-card" data-copy="g_ghazal@live.concordia.ca">
+            <div class="contact-card-icon">
+              <i class="fas fa-envelope"></i>
             </div>
+            <h3>Email</h3>
+            <p>g_ghazal@live.concordia.ca</p>
+            <span class="copy-hint">Click to copy</span>
           </div>
-          <div class="contact-item">
-            <i class="fas fa-phone"></i>
-            <div>
-              <h3>Phone</h3>
-              <p>+1 (438) 979-4030</p>
+          
+          <div class="contact-card" data-copy="+1 (438) 979-4030">
+            <div class="contact-card-icon">
+              <i class="fas fa-phone"></i>
             </div>
+            <h3>Phone</h3>
+            <p>+1 (438) 979-4030</p>
+            <span class="copy-hint">Click to copy</span>
           </div>
-          <div class="contact-item">
-            <i class="fas fa-map-marker-alt"></i>
-            <div>
-              <h3>Location</h3>
-              <p>Montreal, Canada</p>
+          
+          <div class="contact-card">
+            <div class="contact-card-icon">
+              <i class="fas fa-map-marker-alt"></i>
             </div>
+            <h3>Location</h3>
+            <p>Montreal, Canada</p>
           </div>
+          
+          <a href="https://www.linkedin.com/in/georges-ghazal1" class="contact-card contact-card-link" target="_blank" rel="noopener noreferrer">
+            <div class="contact-card-icon">
+              <i class="fab fa-linkedin"></i>
+            </div>
+            <h3>LinkedIn</h3>
+            <p>georges-ghazal1</p>
+            <span class="copy-hint">Visit profile</span>
+          </a>
+          
+          <a href="https://github.com/Georges999" class="contact-card contact-card-link" target="_blank" rel="noopener noreferrer">
+            <div class="contact-card-icon">
+              <i class="fab fa-github"></i>
+            </div>
+            <h3>GitHub</h3>
+            <p>Georges999</p>
+            <span class="copy-hint">Visit profile</span>
+          </a>
         </div>
         <form class="contact-form">
           <div class="form-group">
@@ -405,7 +510,6 @@
           </div>
           <button type="submit" class="btn primary-btn">Send Message</button>
         </form>
-        <p>Recently Gained Experience in developing a Model Context Protocol (MCP) server and client in Python for blender, FreeCAD, and MeshLab.</p>
       </div>
     </section>
   </main>
@@ -423,7 +527,7 @@
 
   <div class="back-to-top">
     <i class="fas fa-arrow-up"></i>
-</div>
+  </div>
 
 <script src="script.js"></script>
 <script src="particles.js"></script>

@@ -27,9 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initTypingEffect();
   initProjectFilter();
   initSkillAnimation();
-  initContactForm();
+  initContactCopy();
   initLightbox();
-  initResumeDownload();
 });
 
 // Mobile Menu Toggle
@@ -193,58 +192,8 @@ function initTypingEffect() {
   }
 }
 
-// Project Filtering
+// Project Image Navigation and Dynamic Cards
 function initProjectFilter() {
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  const projectCards = document.querySelectorAll('.project-card');
-  
-  // Function to filter projects
-  function filterProjects(filterValue) {
-    console.log("Filtering projects:", filterValue); // Debug
-    
-    projectCards.forEach((card, index) => {
-      const cardCategory = card.getAttribute('data-category');
-      console.log("Card category:", cardCategory); // Debug
-      
-      card.style.transform = 'scale(0.8) translateY(50px)';
-      card.style.opacity = '0';
-      
-      setTimeout(() => {
-        if (filterValue === 'all' || cardCategory === filterValue) {
-          card.style.display = 'block';
-          // Add a staggered delay based on the index
-          setTimeout(() => {
-            card.style.transform = 'scale(1) translateY(0)';
-            card.style.opacity = '1';
-          }, 50 * index);
-        } else {
-          card.style.display = 'none';
-        }
-      }, 300);
-    });
-  }
-  
-  // Set up click events for filter buttons
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      // Remove active class from all buttons
-      filterBtns.forEach(btn => btn.classList.remove('active'));
-      
-      // Add active class to clicked button
-      this.classList.add('active');
-      
-      const filterValue = this.getAttribute('data-filter');
-      filterProjects(filterValue);
-    });
-  });
-  
-  // Initialize with "all" filter active
-  const activeFilterBtn = document.querySelector('.filter-btn.active');
-  if (activeFilterBtn) {
-    const initialFilter = activeFilterBtn.getAttribute('data-filter');
-    filterProjects(initialFilter);
-  }
-  
   // Initialize dynamic project cards
   initDynamicProjectCards();
   
@@ -1164,49 +1113,60 @@ function initAnimations() {
   animateSkills();
 }
 
-// Contact Form Validation and Submit
-function initContactForm() {
-  const contactForm = document.querySelector('.contact-form');
+// Contact Copy to Clipboard
+function initContactCopy() {
+  const contactCards = document.querySelectorAll('.contact-card[data-copy]');
+  const notification = document.querySelector('.copy-notification');
   
-  if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
+  if (!contactCards.length || !notification) return;
+  
+  contactCards.forEach(card => {
+    card.addEventListener('click', async function(e) {
       e.preventDefault();
       
-      // Basic form validation
-      const name = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const subject = document.getElementById('subject').value;
-      const message = document.getElementById('message').value;
+      const textToCopy = this.getAttribute('data-copy');
       
-      if (!name || !email || !subject || !message) {
-        alert('Please fill in all fields');
-        return;
-      }
-      
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        alert('Please enter a valid email address');
-        return;
-      }
-      
-      // Simulate form submission (replace with actual form submission)
-      const submitBtn = contactForm.querySelector('button[type="submit"]');
-      const originalText = submitBtn.innerHTML;
-      
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-      
-      setTimeout(() => {
-        contactForm.reset();
-        submitBtn.innerHTML = '<i class="fas fa-check"></i> Message Sent!';
+      try {
+        // Use modern clipboard API
+        await navigator.clipboard.writeText(textToCopy);
         
-        setTimeout(() => {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = originalText;
-        }, 3000);
-      }, 2000);
+        // Show notification
+        showCopyNotification();
+      } catch (err) {
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(textToCopy);
+      }
     });
+  });
+  
+  function showCopyNotification() {
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 2500);
+  }
+  
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.top = '-9999px';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showCopyNotification();
+      }
+    } catch (err) {
+      console.error('Fallback: Unable to copy', err);
+    }
+    
+    document.body.removeChild(textArea);
   }
 }
 
@@ -1346,18 +1306,5 @@ function initLightbox() {
     if (lightboxNext) {
       lightboxNext.style.visibility = currentImageIndex === images.length - 1 ? 'hidden' : 'visible';
     }
-  }
-}
-
-// Add this function at the end of the file
-function initResumeDownload() {
-  // Simple download - just let the browser handle it
-  const resumeLink = document.querySelector('.download-btn');
-  
-  if (resumeLink) {
-    resumeLink.addEventListener('click', function(e) {
-      // Let the browser handle the download natively
-      // No need for custom handling
-    });
   }
 } 
