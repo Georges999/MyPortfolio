@@ -194,7 +194,7 @@ function initTypingEffect() {
   }
 }
 
-// Project Filtering (filter buttons removed, keeping image navigation)
+// Project Image Navigation and Dynamic Cards
 function initProjectFilter() {
   // Initialize dynamic project cards
   initDynamicProjectCards();
@@ -1115,31 +1115,61 @@ function initAnimations() {
   animateSkills();
 }
 
-// Contact Copy Functionality
+// Contact Copy to Clipboard
 function initContactCopy() {
-  const copyCards = document.querySelectorAll('.contact-card[data-copy]');
+  const contactCards = document.querySelectorAll('.contact-card[data-copy]');
   const notification = document.querySelector('.copy-notification');
   
-  copyCards.forEach(card => {
-    card.addEventListener('click', async () => {
-      const textToCopy = card.getAttribute('data-copy');
+  if (!contactCards.length || !notification) return;
+  
+  contactCards.forEach(card => {
+    card.addEventListener('click', async function(e) {
+      e.preventDefault();
+      
+      const textToCopy = this.getAttribute('data-copy');
       
       try {
+        // Use modern clipboard API
         await navigator.clipboard.writeText(textToCopy);
         
         // Show notification
-        if (notification) {
-          notification.classList.add('show');
-          
-          setTimeout(() => {
-            notification.classList.remove('show');
-          }, 2000);
-        }
+        showCopyNotification();
       } catch (err) {
-        console.error('Failed to copy text: ', err);
+        // Fallback for older browsers
+        fallbackCopyTextToClipboard(textToCopy);
       }
     });
   });
+  
+  function showCopyNotification() {
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 2500);
+  }
+  
+  function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.top = '-9999px';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        showCopyNotification();
+      }
+    } catch (err) {
+      console.error('Fallback: Unable to copy', err);
+    }
+    
+    document.body.removeChild(textArea);
+  }
 }
 
 // Create folder if it doesn't exist
