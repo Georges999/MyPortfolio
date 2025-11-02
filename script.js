@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initContactCopy();
   initLightbox();
   initAmbientParticles();
+  initResumePreview();
 });
 
 // Mobile Menu Toggle
@@ -1901,4 +1902,47 @@ function initContactParticles() {
   }, { threshold: 0.1 });
   
   observer.observe(container);
+}
+
+// Resume Preview Modal
+function initResumePreview() {
+  const previewBtn = document.getElementById('previewResumeBtn');
+  const modal = document.getElementById('resumeModal');
+  const closeBtn = document.getElementById('closeResumeModal');
+  const iframe = document.getElementById('resumeIframe');
+  
+  if (!previewBtn || !modal || !closeBtn || !iframe) return;
+  
+  // Open modal
+  previewBtn.addEventListener('click', () => {
+    iframe.src = 'assets/Georges_Ghazal_CV28.pdf';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  });
+  
+  // Close modal
+  function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+    // Clear iframe src to stop loading
+    setTimeout(() => {
+      iframe.src = '';
+    }, 300);
+  }
+  
+  closeBtn.addEventListener('click', closeModal);
+  
+  // Close on background click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+  
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      closeModal();
+    }
+  });
 } 

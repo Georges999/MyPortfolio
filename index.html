@@ -78,6 +78,29 @@
           </div>
           <!-- Ambient particles in elastic bound below profile -->
           <canvas id="about-particles" class="ambient-particles-canvas"></canvas>
+          
+          <!-- Resume Card -->
+          <div class="resume-card">
+            <div class="resume-card-content">
+              <div class="resume-icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <div>
+                <h3>Resume</h3>
+                <p>View or download my CV</p>
+              </div>
+            </div>
+            <div class="resume-actions">
+              <button class="btn resume-preview-btn" id="previewResumeBtn">
+                <i class="fas fa-eye"></i>
+                <span>Preview</span>
+              </button>
+              <a href="assets/Georges_Ghazal_CV28.pdf" class="btn resume-download-btn" download target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-download"></i>
+                <span>Download</span>
+              </a>
+            </div>
+          </div>
         </div>
         <div class="about-text">
           <p>Hello! My name is Georges Ghazal and I'm a passionate 3rd year Software Engineering COOP student at Concordia University in Montreal, Canada. Originally from Lebanon, I completed my Lebanese Baccalaureate in Life Sciences at Antonine Sisters School in Ghazir.</p>
@@ -145,7 +168,6 @@
               </div>
             </div>
           </div>
-          <a href="assets/resume.pdf" class="btn primary-btn download-btn" download target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Download Resume</a>
         </div>
       </div>
     </section>
@@ -465,6 +487,26 @@
 
   <div class="back-to-top">
     <i class="fas fa-arrow-up"></i>
+  </div>
+
+  <!-- Resume Preview Modal -->
+  <div id="resumeModal" class="resume-modal">
+    <div class="resume-modal-content">
+      <div class="resume-modal-header">
+        <h3>Resume Preview</h3>
+        <button class="resume-modal-close" id="closeResumeModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="resume-modal-body">
+        <iframe id="resumeIframe" src="" frameborder="0"></iframe>
+      </div>
+      <div class="resume-modal-footer">
+        <a href="assets/Georges_Ghazal_CV28.pdf" class="btn primary-btn" download target="_blank" rel="noopener noreferrer">
+          <i class="fas fa-download"></i> Download PDF
+        </a>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
